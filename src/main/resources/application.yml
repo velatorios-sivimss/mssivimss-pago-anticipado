@@ -1,0 +1,74 @@
+server:
+  port: 8080
+  servlet:
+    contextPath: /${spring.application.name}/v1
+spring: 
+  application:
+    name: mssivimss-arquetipo
+  mvc:
+    pathmatch:
+      matching-strategy: ANT_PATH_MATCHER
+      
+
+      
+  main:
+    allow-circular-references: true
+    
+  
+        
+  servlet:
+    multipart:
+      max-file-size: 30MB
+      max-request-size: 30MB
+            
+logging:
+  level:
+    root: info
+    org.springframework.web: info
+    org.hibernate: error
+
+
+endpoints:
+   mod-catalogos: ${msit_CATALOGOS}
+   ms-reportes: ${msit_REPORTES_GENERALES}
+   
+
+jwt:
+  secretkey-flujo: ${msit_SECRET_KEY}
+  secretkey-dominios: ${msit_SECRET_KEY_DOMINIO}
+  expiration-milliseconds: ${msit_SECRET_KEY_EXPIRATION}
+  
+management:
+      endpoints:
+          web:
+            exposure:
+                include:
+                    health,info,metrics
+
+resilience4j.circuitbreaker:
+    circuitBreakerAspectOrder: 1
+    instances:
+      msflujo:
+        automaticTransitionFromOpenToHalfOpenEnabled: 'true'
+        failureRateThreshold: ${msit_HILOS}
+        slidingWindowType: COUNT_BASED
+        event-consumer-buffer-size: '10'
+        registerHealthIndicator: 'true'
+        waitDurationInOpenState: ${msit_TIEMPO_DURACION}
+        permittedNumberOfCallsInHalfOpenState: ${msit_NUMERO_INTENTOS}
+        slidingWindowSize: '5'
+resilience4j.retry:
+    retryAspectOrder: 2
+    instances:
+        msflujo:
+           maxAttempts: ${msit_NUMERO_INTENTOS}
+           waitDuration: ${msit_TIEMPO_DURACION}
+resilience4j.timelimiter:
+    timeLimiterAspectOrder: 3
+    instances:
+      msflujo:
+        timeout-duration: ${msit_TIEMPO_DURACION}
+        
+        
+formato_fecha: ${msit_FORMATO_FECHA}
+ruta-log: ${msit_RUTA_LOG}

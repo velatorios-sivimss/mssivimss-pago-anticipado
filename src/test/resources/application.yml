@@ -1,0 +1,78 @@
+server:
+  port: 8080
+  servlet:
+    contextPath: /mssivimss-arquetipo
+spring:
+  mvc:
+    pathmatch:
+      matching-strategy: ANT_PATH_MATCHER
+      
+
+      
+  main:
+    allow-circular-references: true
+    
+  
+        
+  servlet:
+    multipart:
+      max-file-size: 30MB
+      max-request-size: 30MB
+            
+logging:
+  level:
+    root: info
+    org.springframework.web: info
+    org.hibernate: error
+
+logos:
+  msit_logo_imss: /sivimss_data/LOGOS/logoImss.png
+  msit_logo_sistema: /sivimss_data/LOGOS/logoSistema.png
+
+endpoints:
+   dominio-consulta: http://localhost:1080/mssivimss-mod-catalogos/generico/consulta
+   dominio-consulta-paginado: http://localhost:1080/mssivimss-mod-catalogos/generico/paginado
+   dominio-crear: http://localhost:1080/mssivimss-mod-catalogos/generico/crear
+   dominio-crear-multiple: http://localhost:1080/mssivimss-mod-catalogos/generico/crearMultiple
+   dominio-actualizar: http://localhost:1080/mssivimss-mod-catalogos/generico/actualizar
+   ms-reportes: http://localhost:1088/mssivimss-reportes-jpr/generales/generar-reporte
+
+jwt:
+  secretkey-flujo: funcionamuybien
+  secretkey-dominios: funcionamuybiendominio
+  expiration-milliseconds: 360
+  
+management:
+      endpoints:
+          web:
+            exposure:
+                include:
+                    health,info,metrics
+
+resilience4j.circuitbreaker:
+    circuitBreakerAspectOrder: 1
+    instances:
+      msflujo:
+        automaticTransitionFromOpenToHalfOpenEnabled: 'true'
+        failureRateThreshold: '50'
+        slidingWindowType: COUNT_BASED
+        event-consumer-buffer-size: '10'
+        registerHealthIndicator: 'true'
+        waitDurationInOpenState: 5s
+        permittedNumberOfCallsInHalfOpenState: '3'
+        slidingWindowSize: '5'
+resilience4j.retry:
+    retryAspectOrder: 2
+    instances:
+        msflujo:
+           maxAttempts: 3
+           waitDuration: 5s
+resilience4j.timelimiter:
+    timeLimiterAspectOrder: 3
+    instances:
+      msflujo:
+        timeout-duration: 3s
+        
+        
+formato_fecha: '%d/%m/%Y'
+ruta-log: 'C:/Users/ruta/Documents/logs/'
