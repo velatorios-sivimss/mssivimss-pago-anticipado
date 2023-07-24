@@ -4,7 +4,7 @@ server:
     contextPath: /${spring.application.name}/v1
 spring: 
   application:
-    name: mssivimss-arquetipo
+    name: mssivimss-pago-anticipado
   mvc:
     pathmatch:
       matching-strategy: ANT_PATH_MATCHER
