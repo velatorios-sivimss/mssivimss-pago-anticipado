@@ -1,5 +1,6 @@
 package com.imss.sivimss.pagoanticipado.controller;
 
+import com.imss.sivimss.pagoanticipado.service.PagoAnticipadoSFPAService;
 import com.imss.sivimss.pagoanticipado.util.DatosRequest;
 import com.imss.sivimss.pagoanticipado.util.ProviderServiceRestTemplate;
 import com.imss.sivimss.pagoanticipado.util.Response;
@@ -25,13 +26,15 @@ import java.util.concurrent.CompletableFuture;
 public class PagoAnticipadoSFPAController {
     @Autowired
     private ProviderServiceRestTemplate providerRestTemplate;
+    @Autowired
+    private PagoAnticipadoSFPAService servicio;
     private static final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(PagoAnticipadoSFPAController.class);
     @CircuitBreaker(name = "msflujo", fallbackMethod = "fallbackGenerico")
     @Retry(name = "msflujo", fallbackMethod = "fallbackGenerico")
     @TimeLimiter(name = "msflujo")
     @PostMapping("buscar-rfc-empresa")
     public CompletableFuture<?> buscarPlanSFPA(@RequestBody DatosRequest request, Authentication authentication) throws IOException, ParseException {
-        Response<?> response = servicio.busquedaRfcEmpresa(request, authentication);
+        Response<?> response = servicio.buscarPlanSFPA(request, authentication);
         return CompletableFuture
                 .supplyAsync(() -> new ResponseEntity<>(response, HttpStatus.valueOf(response.getCodigo())));
     }
