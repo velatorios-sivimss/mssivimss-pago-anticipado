@@ -1,5 +1,6 @@
 package com.imss.sivimss.pagoanticipado.controller;
 
+import com.imss.sivimss.pagoanticipado.service.PagoAnticipadoSFPAService;
 import com.imss.sivimss.pagoanticipado.util.DatosRequest;
 import com.imss.sivimss.pagoanticipado.util.ProviderServiceRestTemplate;
 import com.imss.sivimss.pagoanticipado.util.Response;
@@ -24,14 +25,65 @@ import java.util.concurrent.CompletableFuture;
 @RequestMapping("/pagoAnticipado")
 public class PagoAnticipadoSFPAController {
     @Autowired
+    private PagoAnticipadoSFPAService servicio;
+    @Autowired
     private ProviderServiceRestTemplate providerRestTemplate;
+
     private static final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(PagoAnticipadoSFPAController.class);
+
     @CircuitBreaker(name = "msflujo", fallbackMethod = "fallbackGenerico")
     @Retry(name = "msflujo", fallbackMethod = "fallbackGenerico")
     @TimeLimiter(name = "msflujo")
-    @PostMapping("buscar-rfc-empresa")
+    @PostMapping("buscar-planes")
     public CompletableFuture<?> buscarPlanSFPA(@RequestBody DatosRequest request, Authentication authentication) throws IOException, ParseException {
-        Response<?> response = servicio.busquedaRfcEmpresa(request, authentication);
+        Response<?> response = servicio.buscarPlanSFPA(request, authentication);
+        return CompletableFuture
+                .supplyAsync(() -> new ResponseEntity<>(response, HttpStatus.valueOf(response.getCodigo())));
+    }
+    @CircuitBreaker(name = "msflujo", fallbackMethod = "fallbackGenerico")
+    @Retry(name = "msflujo", fallbackMethod = "fallbackGenerico")
+    @TimeLimiter(name = "msflujo")
+    @PostMapping("buscar-metodos-pago")
+    public CompletableFuture<?> obtenerMetodosPago(@RequestBody DatosRequest request, Authentication authentication) throws IOException, ParseException {
+        Response<?> response = servicio.metodosPago(request, authentication);
+        return CompletableFuture
+                .supplyAsync(() -> new ResponseEntity<>(response, HttpStatus.valueOf(response.getCodigo())));
+    }
+    @CircuitBreaker(name = "msflujo", fallbackMethod = "fallbackGenerico")
+    @Retry(name = "msflujo", fallbackMethod = "fallbackGenerico")
+    @TimeLimiter(name = "msflujo")
+    @PostMapping("registrar-pago")
+    public CompletableFuture<?> registrarPago(@RequestBody DatosRequest request, Authentication authentication) throws IOException, ParseException {
+        Response<?> response = servicio.generarPago(request, authentication);
+        return CompletableFuture
+                .supplyAsync(() -> new ResponseEntity<>(response, HttpStatus.valueOf(response.getCodigo())));
+    }
+
+    @CircuitBreaker(name = "msflujo", fallbackMethod = "fallbackGenerico")
+    @Retry(name = "msflujo", fallbackMethod = "fallbackGenerico")
+    @TimeLimiter(name = "msflujo")
+    @PostMapping("obtener-detalle")
+    public CompletableFuture<?> obtenerDetalle(@RequestBody DatosRequest request, Authentication authentication) throws IOException, ParseException {
+        Response<?> response = servicio.verDetallePagos(request, authentication);
+        return CompletableFuture
+                .supplyAsync(() -> new ResponseEntity<>(response, HttpStatus.valueOf(response.getCodigo())));
+    }
+
+    @CircuitBreaker(name = "msflujo", fallbackMethod = "fallbackGenerico")
+    @Retry(name = "msflujo", fallbackMethod = "fallbackGenerico")
+    @TimeLimiter(name = "msflujo")
+    @PostMapping("descargar-pdf")
+    public CompletableFuture<?> generarPDF(@RequestBody DatosRequest request, Authentication authentication) throws IOException, ParseException {
+        Response<?> response = servicio.generarPDF(request, authentication);
+        return CompletableFuture
+                .supplyAsync(() -> new ResponseEntity<>(response, HttpStatus.valueOf(response.getCodigo())));
+    }
+    @CircuitBreaker(name = "msflujo", fallbackMethod = "fallbackGenerico")
+    @Retry(name = "msflujo", fallbackMethod = "fallbackGenerico")
+    @TimeLimiter(name = "msflujo")
+    @PostMapping("/descargar-reporte")
+    public CompletableFuture<?> descargarReporte(@RequestBody DatosRequest request, Authentication authentication) throws IOException, ParseException {
+        Response<?> response = servicio.descargarDocumento(request, authentication);
         return CompletableFuture
                 .supplyAsync(() -> new ResponseEntity<>(response, HttpStatus.valueOf(response.getCodigo())));
     }
