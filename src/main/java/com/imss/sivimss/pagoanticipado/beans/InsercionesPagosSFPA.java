@@ -46,6 +46,7 @@ public class InsercionesPagosSFPA {
         q.agregarParametroValues("ID_METODO_PAGO", "'" + idTipoPago + "'");
         q.agregarParametroValues("ID_USUARIO_ALTA","'" + usuario + "'");
         q.agregarParametroValues("ID_BITACORA_PAGO", "idTabla");
+        q.agregarParametroValues("ID_ESTATUS_PAGO", "1");
         return q.obtenerQueryInsertar();
     }
 
