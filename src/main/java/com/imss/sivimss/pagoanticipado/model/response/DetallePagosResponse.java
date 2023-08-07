@@ -10,4 +10,7 @@ private String metodoPago;
 private String numeroAutorizacion;
 private String folioAutorizacion;
 private String estatusPago;
+private Integer idBitacoraPago;
+private String nombreBanco;
+private String velatorio;
 }

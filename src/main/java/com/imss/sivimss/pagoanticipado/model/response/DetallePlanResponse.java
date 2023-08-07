@@ -13,4 +13,6 @@ public class DetallePlanResponse {
     private String estado;
     private String velatorio;
     private String estatusPlan;
+    private String total;
+    private String restante;
 }

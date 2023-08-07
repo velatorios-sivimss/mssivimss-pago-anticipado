@@ -40,6 +40,34 @@ public class PagoAnticipadoSFPAController {
         return CompletableFuture
                 .supplyAsync(() -> new ResponseEntity<>(response, HttpStatus.valueOf(response.getCodigo())));
     }
+
+    @CircuitBreaker(name = "msflujo", fallbackMethod = "fallbackGenerico")
+    @Retry(name = "msflujo", fallbackMethod = "fallbackGenerico")
+    @TimeLimiter(name = "msflujo")
+    @PostMapping("buscar-planes-folio")
+    public CompletableFuture<?> buscarPlanSFPAFolio(@RequestBody DatosRequest request, Authentication authentication) throws IOException, ParseException {
+        Response<?> response = servicio.buscarFolios(request, authentication);
+        return CompletableFuture
+                .supplyAsync(() -> new ResponseEntity<>(response, HttpStatus.valueOf(response.getCodigo())));
+    }
+    @CircuitBreaker(name = "msflujo", fallbackMethod = "fallbackGenerico")
+    @Retry(name = "msflujo", fallbackMethod = "fallbackGenerico")
+    @TimeLimiter(name = "msflujo")
+    @PostMapping("modificar-pago")
+    public CompletableFuture<?> modificarPago(@RequestBody DatosRequest request, Authentication authentication) throws IOException, ParseException {
+        Response<?> response = servicio.actualizarPago(request, authentication);
+        return CompletableFuture
+                .supplyAsync(() -> new ResponseEntity<>(response, HttpStatus.valueOf(response.getCodigo())));
+    }
+    @CircuitBreaker(name = "msflujo", fallbackMethod = "fallbackGenerico")
+    @Retry(name = "msflujo", fallbackMethod = "fallbackGenerico")
+    @TimeLimiter(name = "msflujo")
+    @PostMapping("desactivar-pago")
+    public CompletableFuture<?> desactivarPago(@RequestBody DatosRequest request, Authentication authentication) throws IOException, ParseException {
+        Response<?> response = servicio.desactivarPago(request, authentication);
+        return CompletableFuture
+                .supplyAsync(() -> new ResponseEntity<>(response, HttpStatus.valueOf(response.getCodigo())));
+    }
     @CircuitBreaker(name = "msflujo", fallbackMethod = "fallbackGenerico")
     @Retry(name = "msflujo", fallbackMethod = "fallbackGenerico")
     @TimeLimiter(name = "msflujo")

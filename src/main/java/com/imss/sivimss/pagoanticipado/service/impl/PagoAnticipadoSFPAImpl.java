@@ -58,6 +58,13 @@ public class PagoAnticipadoSFPAImpl implements PagoAnticipadoSFPAService {
     }
 
     @Override
+    public Response<?> buscarFolios(DatosRequest request, Authentication authentication) throws IOException {
+        JsonObject jsonObj = JsonParser.parseString((String)request.getDatos().get(AppConstantes.DATOS)).getAsJsonObject();
+        String cadena = jsonObj.get("cadena").getAsString();
+        return providerRestTemplate.consumirServicio(bean.buscarFolioAutoRellenable(cadena).getDatos(),consultas + "/consulta", authentication);
+    }
+
+    @Override
     public Response<?> metodosPago(DatosRequest request, Authentication authentication) throws IOException {
         return providerRestTemplate.consumirServicio(bean.obtenerMetodosPago().getDatos(), consultas + "/consulta", authentication);
     }
@@ -82,17 +89,21 @@ public class PagoAnticipadoSFPAImpl implements PagoAnticipadoSFPAService {
         Response<?> response = providerRestTemplate.consumirServicio(beanInserta.insertarBitacoraPago(pagoRequest, montoTotal, obj.get("importeTotal").getAsString(), mesesPagar, desMeses, usuarioDto.getIdUsuario().toString()).getDatos(), consultas + "/crearMultiple", authentication);
         if(montoTotal.equals("0.0")){
             providerRestTemplate.consumirServicio(beanActualiza.actualizarEstatusPagadoPlanSFPA(pagoRequest.getIdPlan()).getDatos(), consultas + "/actualizar", authentication);
+            providerRestTemplate.consumirServicio(beanActualiza.actualizarEstatusCerradoPagoSFPA(pagoRequest.getIdPlan()).getDatos(), consultas + "/actualizar", authentication);
         }
 
         if (response.getCodigo() == 200 && banderaPrimerPago) {
             providerRestTemplate.consumirServicio(beanActualiza.actualizarEstatusVigentePlanSFPA(pagoRequest.getIdPlan()).getDatos(), consultas + "/actualizar", authentication);
+            providerRestTemplate.consumirServicio(beanActualiza.actualizarEstatusVigentePagoSFPA(pagoRequest.getIdPlan()).getDatos(), consultas + "/actualizar", authentication);
         }
         if(montoTotal.equals(pagoRequest.getImporte()) && response.getCodigo() == 200){
             providerRestTemplate.consumirServicio(beanActualiza.actualizarEstatusPagadoPlanSFPA(pagoRequest.getIdPlan()).getDatos(), consultas + "/actualizar", authentication);
+            providerRestTemplate.consumirServicio(beanActualiza.actualizarEstatusCerradoPagoSFPA(pagoRequest.getIdPlan()).getDatos(), consultas + "/actualizar", authentication);
         }
         if(Double.valueOf(pagoRequest.getImporte()) > Double.valueOf(montoTotal) ){
             log.info("el importe es mayor");
             providerRestTemplate.consumirServicio(beanActualiza.actualizarEstatusPagadoPlanSFPA(pagoRequest.getIdPlan()).getDatos(), consultas + "/actualizar", authentication);
+            providerRestTemplate.consumirServicio(beanActualiza.actualizarEstatusCerradoPagoSFPA(pagoRequest.getIdPlan()).getDatos(), consultas + "/actualizar", authentication);
         }
         return response;
     }
@@ -118,6 +129,43 @@ public class PagoAnticipadoSFPAImpl implements PagoAnticipadoSFPAService {
         response.setCodigo(200);
         response.setMensaje("");
         return response;
+    }
+
+    @Override
+    public Response<?> actualizarPago(DatosRequest request, Authentication authentication) throws IOException {
+        String datosJson = String.valueOf(request.getDatos().get(AppConstantes.DATOS));
+        ActualizaPagoRequest actualiza = json.fromJson(datosJson,ActualizaPagoRequest.class);
+        return providerRestTemplate.consumirServicio(beanActualiza.actualizarMetodoPago(actualiza).getDatos(), consultas + "/actualizar", authentication);
+
+    }
+
+    @Override
+    public Response<?> desactivarPago(DatosRequest request, Authentication authentication) throws IOException {
+        Response<?> respuestaFiinal = new Response();
+        JsonObject jsonObj = JsonParser.parseString((String)request.getDatos().get(AppConstantes.DATOS)).getAsJsonObject();
+        String idPlanbitacora = jsonObj.get("idPlanBitacora").getAsString();
+        Response<?> respuesta= providerRestTemplate.consumirServicio(beanActualiza.desactivarPago(idPlanbitacora).getDatos(), consultas + "/actualizar", authentication);
+
+        if(respuesta.getMensaje().equals("Exito")){
+            Response<?> respuestaImportes = providerRestTemplate.consumirServicio(bean.obtenerImporteCancelado(idPlanbitacora).getDatos()
+                    , consultas + "/consulta", authentication);
+            JsonArray jsonArray = (JsonArray) JsonParser.parseString(respuestaImportes.getDatos().toString());
+            JsonObject jsonObject = (JsonObject) JsonParser.parseString(jsonArray.get(0).toString());
+            Double importe = jsonObject.get("DES_IMPORTE").getAsDouble();
+            Double totalRestante = jsonObject.get("DES_TOTAL_RESTANTE").getAsDouble();
+            Integer idPlanSFPA = jsonObject.get("ID_PLAN_SFPA").getAsInt();
+            Response<?> respuestaIdBP = providerRestTemplate.consumirServicio(bean.obtenerUltimoRegistroActivo(idPlanSFPA.toString()).getDatos()
+                    , consultas + "/consulta", authentication);
+            JsonArray responseIdBp = (JsonArray) JsonParser.parseString(respuestaIdBP.getDatos().toString());
+            JsonObject obj = (JsonObject) JsonParser.parseString(responseIdBp.get(0).toString());
+            Integer idPagobitacora = obj.get("idPagoBitacora").getAsInt();
+            Double nuevoRestante = (importe + totalRestante);
+            return providerRestTemplate.consumirServicio(beanActualiza.actualizarNuevoRestante(String.valueOf(idPagobitacora),nuevoRestante.toString()).getDatos(), consultas + "/actualizar", authentication);
+        }
+        respuestaFiinal.setMensaje("");
+        respuestaFiinal.setError(true);
+        respuestaFiinal.setCodigo(500);
+        return respuestaFiinal;
     }
 
     @Override
@@ -181,7 +229,6 @@ public class PagoAnticipadoSFPAImpl implements PagoAnticipadoSFPAService {
         JsonArray objeto = (JsonArray) jsonParser.parse(respuesta.getDatos().toString());
         JsonObject obj = (JsonObject) jsonParser.parse(objeto.get(0).toString());
         String restante = obj.get("totalRestante").getAsString();
-        log.info("- restante : " + restante);
         if(restante.contains("-")){
             restante= "0.0";
         }
