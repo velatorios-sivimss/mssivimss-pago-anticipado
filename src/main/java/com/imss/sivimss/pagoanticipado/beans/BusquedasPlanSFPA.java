@@ -43,9 +43,12 @@ public class BusquedasPlanSFPA {
             query.and("SP.ID_TITULAR_SUBSTITUTO = " + idContratante);
         }
         String consulta = query.build();
+        log.info("1");
         log.info(consulta);
         String encoded = DatatypeConverter.printBase64Binary(consulta.getBytes());
         parametro.put(AppConstantes.QUERY, encoded);
+        parametro.put("tamanio","10");
+        parametro.put("pagina","0");
         dr.setDatos(parametro);
         return dr;
     }
@@ -195,7 +198,7 @@ public class BusquedasPlanSFPA {
         Map<String, Object> parametro = new HashMap<>();
         SelectQueryUtil query = new SelectQueryUtil();
         query.select("SBP.ID_BITACORA_PAGO as idBitacoraPago", "SBP.NOM_BANCO as nombreBanco",
-                "CONCAT(row_number() over (order by sbp.ID_BITACORA_PAGO) ,'/',tpm.DES_TIPO_PAGO_MENSUAL) as pagos",
+                "CONCAT(row_number() over (order by SBP.ID_BITACORA_PAGO) ,'/',TPM.DES_TIPO_PAGO_MENSUAL) as pagos",
                         "SBP.FEC_FECHA_PAGO AS fechaPago","MP.DESC_METODO_PAGO AS metodoPago",
                         "SBP.NUM_AUTORIZACION AS numeroAutorizacion","SBP.DES_FOLIO_AUTORIZACION as folioAutorizacion",
                         "SBP.DES_IMPORTE AS importePago","EST.DES_ESTATUS_PAGO_ANTICIPADO AS estatusPago","VEL.DES_VELATORIO AS velatorio",
