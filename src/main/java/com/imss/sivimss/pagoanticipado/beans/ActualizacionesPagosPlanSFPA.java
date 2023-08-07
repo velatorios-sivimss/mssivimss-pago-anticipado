@@ -39,6 +39,18 @@ public class ActualizacionesPagosPlanSFPA {
         dr.setDatos(parametro);
         return dr;
     }
+    public DatosRequest actualizarEstatusGeneradoPlanSFPA(String idPlan){
+        DatosRequest dr = new DatosRequest();
+        Map<String, Object> parametro = new HashMap<>();
+        final QueryHelper q = new QueryHelper("UPDATE SVT_PLAN_SFPA");
+        q.agregarParametroValues("ID_ESTATUS_PLAN_SFPA","1");
+        q.addWhere("ID_PLAN_SFPA = " + idPlan);
+        String query = q.obtenerQueryActualizar();
+        String encoded = DatatypeConverter.printBase64Binary(query.getBytes());
+        parametro.put(AppConstantes.QUERY, encoded);
+        dr.setDatos(parametro);
+        return dr;
+    }
 
     public DatosRequest actualizarEstatusVigentePagoSFPA(String idPlan){
         DatosRequest dr = new DatosRequest();
