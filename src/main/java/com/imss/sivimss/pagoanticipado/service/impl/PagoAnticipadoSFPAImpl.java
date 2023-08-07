@@ -48,13 +48,14 @@ public class PagoAnticipadoSFPAImpl implements PagoAnticipadoSFPAService {
     @Override
     public Response<?> buscarPlanSFPA(DatosRequest request, Authentication authentication) throws IOException {
         String datosJson = String.valueOf(request.getDatos().get(AppConstantes.DATOS));
+       log.info("ds -> " + datosJson);
         BusquedaRequest busquedaRequest = json.fromJson(datosJson, BusquedaRequest.class);
         String folio = validaNull(busquedaRequest.getFolio());
         String fechaInicio = validaNull(busquedaRequest.getFechaInicio());
         String fechaFin = validaNull(busquedaRequest.getFechaFin());
         String nombreTitularSustituto = validaNull(busquedaRequest.getNombreTitularSustituto());
         String idVelatorio = validaNull(busquedaRequest.getIdVelatorio());
-        return providerRestTemplate.consumirServicio(bean.buscarPlanSFPA(folio, fechaInicio, fechaFin, buscarIdContratante(nombreTitularSustituto, authentication).toString(), idVelatorio).getDatos(), consultas + "/consulta", authentication);
+        return providerRestTemplate.consumirServicio(bean.buscarPlanSFPA(folio, fechaInicio, fechaFin, buscarIdContratante(nombreTitularSustituto, authentication).toString(), idVelatorio).getDatos(), consultas + "/paginado", authentication);
     }
 
     @Override
@@ -219,6 +220,7 @@ public class PagoAnticipadoSFPAImpl implements PagoAnticipadoSFPAService {
             idContratante = obj.get("ID_CONTRATANTE").getAsInt();
             return idContratante;
         }
+        log.info("nll");
         return 0;
     }
 
