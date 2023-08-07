@@ -160,6 +160,12 @@ public class PagoAnticipadoSFPAImpl implements PagoAnticipadoSFPAService {
             JsonObject obj = (JsonObject) JsonParser.parseString(responseIdBp.get(0).toString());
             Integer idPagobitacora = obj.get("idPagoBitacora").getAsInt();
             Double nuevoRestante = (importe + totalRestante);
+            Response <?> respuestaNumPagos = providerRestTemplate.consumirServicio(bean.obtenernumeroPagos(idPlanSFPA.toString()).getDatos(), consultas + "/consulta", authentication);
+            JsonArray arrayNpagos = (JsonArray) JsonParser.parseString(respuestaNumPagos.getDatos().toString());
+            JsonObject objNpagos = (JsonObject) JsonParser.parseString(arrayNpagos.get(0).toString());
+            if(objNpagos.get("numPagos").getAsString().equals("0")){
+                providerRestTemplate.consumirServicio(beanActualiza.actualizarEstatusGeneradoPlanSFPA(String.valueOf(idPlanSFPA)).getDatos(), consultas + "/actualizar", authentication);
+            }
             return providerRestTemplate.consumirServicio(beanActualiza.actualizarNuevoRestante(String.valueOf(idPagobitacora),nuevoRestante.toString()).getDatos(), consultas + "/actualizar", authentication);
         }
         respuestaFiinal.setMensaje("");

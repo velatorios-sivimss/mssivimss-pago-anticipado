@@ -13,4 +13,6 @@ private String estatusPago;
 private Integer idBitacoraPago;
 private String nombreBanco;
 private String velatorio;
+private String monto;
+private String noReciboPago;
 }
