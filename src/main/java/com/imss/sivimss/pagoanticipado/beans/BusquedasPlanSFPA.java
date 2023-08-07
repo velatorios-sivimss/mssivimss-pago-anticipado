@@ -199,7 +199,7 @@ public class BusquedasPlanSFPA {
                         "SBP.FEC_FECHA_PAGO AS fechaPago","MP.DESC_METODO_PAGO AS metodoPago",
                         "SBP.NUM_AUTORIZACION AS numeroAutorizacion","SBP.DES_FOLIO_AUTORIZACION as folioAutorizacion",
                         "SBP.DES_IMPORTE AS importePago","EST.DES_ESTATUS_PAGO_ANTICIPADO AS estatusPago","VEL.DES_VELATORIO AS velatorio",
-                        "SBP.DES_IMPORTE AS monto")
+                        "SBP.DES_IMPORTE AS monto","LPAD(SBP.ID_BITACORA_PAGO,5,'0') as noReciboPago")
                 .from("SVC_PAGO_SFPA SPS")
                 .innerJoin("SVC_BITACORA_PAGO_ANTICIPADO SBP","SPS.ID_BITACORA_PAGO = SBP.ID_BITACORA_PAGO AND SBP.IND_ACTIVO = 1")
                 .leftJoin("SVC_TIPO_PAGO_MENSUAL TPM","SPS.ID_TIPO_PAGO_MENSUAL = TPM.ID_TIPO_PAGO_MENSUAL")
