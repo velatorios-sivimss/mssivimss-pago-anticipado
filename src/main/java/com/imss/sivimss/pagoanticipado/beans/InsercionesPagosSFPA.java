@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 import javax.xml.bind.DatatypeConverter;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 
 @Service
 public class InsercionesPagosSFPA {
@@ -17,9 +18,10 @@ public class InsercionesPagosSFPA {
         DatosRequest dr = new DatosRequest();
         Map<String, Object> parametro = new HashMap<>();
         Double montoRestante = (Double.valueOf(montoTotal) - Double.valueOf(registrarPagoRequest.getImporte()));
+        String fecPago = Objects.isNull(registrarPagoRequest.getFechaPago()) ? "" : "'" +registrarPagoRequest.getFechaPago() + "'" ;
         final QueryHelper queryHelper = new QueryHelper("INSERT SVC_BITACORA_PAGO_ANTICIPADO");
         queryHelper.agregarParametroValues("ID_PLAN_SFPA", String.valueOf(registrarPagoRequest.getIdPlan()));
-        queryHelper.agregarParametroValues("FEC_FECHA_PAGO", "'" + registrarPagoRequest.getFechaPago() + "'");
+        queryHelper.agregarParametroValues("FEC_FECHA_PAGO",fecPago);
         queryHelper.agregarParametroValues("NUM_AUTORIZACION", "'" + registrarPagoRequest.getNumeroAutorizacion() + "'");
         queryHelper.agregarParametroValues("NOM_BANCO", "'" + registrarPagoRequest.getNombreBanco() + "'");
         queryHelper.agregarParametroValues("DES_IMPORTE", "'" + registrarPagoRequest.getImporte() + "'");
