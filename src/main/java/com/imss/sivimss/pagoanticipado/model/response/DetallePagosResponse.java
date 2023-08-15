@@ -7,6 +7,7 @@ public class DetallePagosResponse {
 private String pagos;
 private String fechaPago;
 private String metodoPago;
+private String idMetodoPago;
 private String numeroAutorizacion;
 private String folioAutorizacion;
 private String estatusPago;
