@@ -254,8 +254,8 @@ public class BusquedasPlanSFPA {
         SelectQueryUtil query = new SelectQueryUtil();
         query.select("COUNT(SPS.ID_PAGO_SFPA) AS numPagos")
                 .from("SVC_PAGO_SFPA SPS")
-                .where("SBPA.ID_PLAN_SFPA = " + idPlan)
-                .and("SBPA.IND_ACTIVO = 1");
+                .where("SPS.ID_PLAN_SFPA = " + idPlan)
+                .and("SPS.IND_ACTIVO = 1");
         String consulta = query.build();
         String encoded = DatatypeConverter.printBase64Binary(consulta.getBytes());
         parametro.put(AppConstantes.QUERY, encoded);
