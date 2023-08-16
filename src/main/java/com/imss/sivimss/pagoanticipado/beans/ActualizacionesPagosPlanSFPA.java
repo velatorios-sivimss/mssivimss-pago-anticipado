@@ -102,7 +102,7 @@ public class ActualizacionesPagosPlanSFPA {
     public DatosRequest desactivarPago(String idPagoBitacora){
         DatosRequest dr = new DatosRequest();
         Map<String, Object> parametro = new HashMap<>();
-        final QueryHelper q = new QueryHelper("UPDATE SVC_BITACORA_PAGO_ANTICIPADO");
+        final QueryHelper q = new QueryHelper("UPDATE SVC_PAGO_SFPA");
         q.agregarParametroValues("IND_ACTIVO","0");
         q.agregarParametroValues("ID_ESTATUS_PAGO","3");
         q.addWhere("ID_BITACORA_PAGO = " + idPagoBitacora);
