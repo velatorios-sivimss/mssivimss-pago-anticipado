@@ -82,7 +82,9 @@ public class ActualizacionesPagosPlanSFPA {
         DatosRequest dr = new DatosRequest();
         Map<String, Object> parametro = new HashMap<>();
         final QueryHelper q = new QueryHelper("UPDATE SVC_BITACORA_PAGO_ANTICIPADO");
+        if(!Objects.isNull(request.getFechaPago())){
         q.agregarParametroValues("FEC_FECHA_PAGO","'" + request.getFechaPago() + "'");
+        }
         if(!Objects.isNull(request.getNumeroAutorizacion())){
             q.agregarParametroValues("NUM_AUTORIZACION","'" + request.getNumeroAutorizacion()+ "'");
         }
