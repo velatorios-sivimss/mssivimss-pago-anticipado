@@ -187,6 +187,7 @@ public class BusquedasPlanSFPA {
                 .leftJoin("SVT_DOMICILIO SD","CON.ID_DOMICILIO = SD.ID_DOMICILIO")
                 .where("SPS.ID_PLAN_SFPA = " + idPlan);
         String consulta = query.build();
+        log.info("q dp - " + consulta);
         String encoded = DatatypeConverter.printBase64Binary(consulta.getBytes());
         parametro.put(AppConstantes.QUERY, encoded);
         dr.setDatos(parametro);
