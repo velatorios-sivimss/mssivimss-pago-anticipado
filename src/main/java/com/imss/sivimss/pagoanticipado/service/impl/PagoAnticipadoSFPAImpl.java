@@ -136,6 +136,7 @@ public class PagoAnticipadoSFPAImpl implements PagoAnticipadoSFPAService {
     public Response<?> actualizarPago(DatosRequest request, Authentication authentication) throws IOException {
         String datosJson = String.valueOf(request.getDatos().get(AppConstantes.DATOS));
         ActualizaPagoRequest actualiza = json.fromJson(datosJson,ActualizaPagoRequest.class);
+        log.info(actualiza.getIdPago().toString());
         return providerRestTemplate.consumirServicio(beanActualiza.actualizarMetodoPago(actualiza).getDatos(), consultas + "/actualizar", authentication);
 
     }

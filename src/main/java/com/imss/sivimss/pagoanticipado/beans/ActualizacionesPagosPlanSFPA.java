@@ -91,6 +91,12 @@ public class ActualizacionesPagosPlanSFPA {
         if(!Objects.isNull(request.getFolioAutorizacion())){
             q.agregarParametroValues("DES_FOLIO_AUTORIZACION","'" + request.getFolioAutorizacion()+ "'");
         }
+        if(!Objects.isNull(request.getIdTipoPago())){
+            q.agregarParametroValues("ID_METODO_PAGO","'" + request.getIdTipoPago()+ "'");
+        }
+        if(!Objects.isNull(request.getImporte())){
+            q.agregarParametroValues("DES_IMPORTE","'" + request.getImporte()+ "'");
+        }
         q.agregarParametroValues("NOM_BANCO", "'" + request.getNombreBanco()+ "'");
         q.addWhere("ID_BITACORA_PAGO = " + request.getIdPago());
         String query = q.obtenerQueryActualizar();

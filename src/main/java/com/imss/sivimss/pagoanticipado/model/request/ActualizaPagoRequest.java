@@ -9,4 +9,6 @@ private String numeroAutorizacion;
 private String folioAutorizacion;
 private String nombreBanco;
 private String fechaPago;
+private String idTipoPago;
+private String importe;
 }
