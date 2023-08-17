@@ -200,14 +200,14 @@ public class BusquedasPlanSFPA {
         SelectQueryUtil query = new SelectQueryUtil();
         query.select("SBP.ID_BITACORA_PAGO as idBitacoraPago", "SBP.NOM_BANCO as nombreBanco",
                 "CONCAT(row_number() over (order by SBP.ID_BITACORA_PAGO) ,'/',TPM.DES_TIPO_PAGO_MENSUAL) as pagos",
-                        "SBP.FEC_FECHA_PAGO AS fechaPago","MP.DESC_METODO_PAGO AS metodoPago","MP.ID_METODO_PAGO as idMetodoPago",
+                        "SBP.FEC_FECHA_PAGO AS fechaPago","MP.DESC_METODO_PAGO AS metodoPago","SBP.ID_METODO_PAGO as idMetodoPago",
                         "SBP.NUM_AUTORIZACION AS numeroAutorizacion","SBP.DES_FOLIO_AUTORIZACION as folioAutorizacion",
                         "SBP.DES_IMPORTE AS importePago","EST.DES_ESTATUS_PAGO_ANTICIPADO AS estatusPago","VEL.DES_VELATORIO AS velatorio",
                         "SBP.DES_IMPORTE AS monto","LPAD(SBP.ID_BITACORA_PAGO,5,'0') as noReciboPago")
                 .from("SVC_PAGO_SFPA SPS")
                 .innerJoin("SVC_BITACORA_PAGO_ANTICIPADO SBP","SPS.ID_BITACORA_PAGO = SBP.ID_BITACORA_PAGO AND SBP.IND_ACTIVO = 1")
                 .leftJoin("SVC_TIPO_PAGO_MENSUAL TPM","SPS.ID_TIPO_PAGO_MENSUAL = TPM.ID_TIPO_PAGO_MENSUAL")
-                .leftJoin("SVC_METODO_PAGO MP","SPS.ID_METODO_PAGO = MP.ID_METODO_PAGO")
+                .leftJoin("SVC_METODO_PAGO MP","SBP.ID_METODO_PAGO = MP.ID_METODO_PAGO")
                 .leftJoin("SVC_ESTATUS_PAGO_ANTICIPADO EST","SPS.ID_ESTATUS_PAGO = EST.ID_ESTATUS_PAGO_ANTICIPADO")
                 .leftJoin("SVT_PLAN_SFPA PLAN","SPS.ID_PLAN_SFPA = PLAN.ID_PLAN_SFPA")
                 .leftJoin("SVC_VELATORIO VEL","PLAN.ID_VELATORIO = VEL.ID_VELATORIO")
