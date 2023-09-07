@@ -228,6 +228,7 @@ public class BusquedasPlanSFPA {
                 .from("SVC_BITACORA_PAGO_ANTICIPADO PA")
                 .where("PA.ID_BITACORA_PAGO = " + idPagoBitacora);
         String consulta = query.build();
+        log.info("query importe cancelado - " + consulta);
         String encoded = DatatypeConverter.printBase64Binary(consulta.getBytes());
         parametro.put(AppConstantes.QUERY, encoded);
         dr.setDatos(parametro);
@@ -238,10 +239,26 @@ public class BusquedasPlanSFPA {
         DatosRequest dr = new DatosRequest();
         Map<String, Object> parametro = new HashMap<>();
         SelectQueryUtil query = new SelectQueryUtil();
-        query.select("MAX(SBPA.ID_BITACORA_PAGO) AS idPagoBitacora")
+        query.select("MAX(SBPA.ID_BITACORA_PAGO) AS idPagoBitacora" , "SBPA.DES_TOTAL_RESTANTE AS restante")
                 .from("SVC_BITACORA_PAGO_ANTICIPADO SBPA")
                 .where("SBPA.ID_PLAN_SFPA = " + idPlan)
                 .and("SBPA.IND_ACTIVO = 1");
+        String consulta = query.build();
+        log.info("ultimo registro activo - " + consulta);
+        String encoded = DatatypeConverter.printBase64Binary(consulta.getBytes());
+        parametro.put(AppConstantes.QUERY, encoded);
+        dr.setDatos(parametro);
+        return dr;
+    }
+
+    public DatosRequest obtenerUltimoRestante(String idPlan){
+        DatosRequest dr = new DatosRequest();
+        Map<String, Object> parametro = new HashMap<>();
+        SelectQueryUtil query = new SelectQueryUtil();
+        query.select("SBPA.DES_TOTAL_RESTANTE AS restante")
+                .from("SVC_BITACORA_PAGO_ANTICIPADO SBPA")
+                .where("SBPA.ID_PLAN_SFPA = " + idPlan)
+                .and("SBPA .ID_BITACORA_PAGO = (SELECT MAX(PA.ID_BITACORA_PAGO) FROM SVC_BITACORA_PAGO_ANTICIPADO PA WHERE PA.ID_PLAN_SFPA =" + idPlan +")");
         String consulta = query.build();
         String encoded = DatatypeConverter.printBase64Binary(consulta.getBytes());
         parametro.put(AppConstantes.QUERY, encoded);

@@ -154,14 +154,18 @@ public class PagoAnticipadoSFPAImpl implements PagoAnticipadoSFPAService {
             JsonArray jsonArray = (JsonArray) JsonParser.parseString(respuestaImportes.getDatos().toString());
             JsonObject jsonObject = (JsonObject) JsonParser.parseString(jsonArray.get(0).toString());
             Double importe = jsonObject.get("DES_IMPORTE").getAsDouble();
-            Double totalRestante = jsonObject.get("DES_TOTAL_RESTANTE").getAsDouble();
             Integer idPlanSFPA = jsonObject.get("ID_PLAN_SFPA").getAsInt();
             Response<?> respuestaIdBP = providerRestTemplate.consumirServicio(bean.obtenerUltimoRegistroActivo(idPlanSFPA.toString()).getDatos()
                     , consultas + "/consulta", authentication);
             JsonArray responseIdBp = (JsonArray) JsonParser.parseString(respuestaIdBP.getDatos().toString());
             JsonObject obj = (JsonObject) JsonParser.parseString(responseIdBp.get(0).toString());
             Integer idPagobitacora = obj.get("idPagoBitacora").getAsInt();
-            Double nuevoRestante = (importe + totalRestante);
+            Response<?> ultimoRestante = providerRestTemplate.consumirServicio(bean.obtenerUltimoRestante(idPlanSFPA.toString()).getDatos()
+                    , consultas + "/consulta", authentication);
+            JsonArray responseUR = (JsonArray) JsonParser.parseString(ultimoRestante.getDatos().toString());
+            JsonObject ur = (JsonObject) JsonParser.parseString(responseUR.get(0).toString());
+            Double restante = ur.get("restante").getAsDouble();
+            Double nuevoRestante = (importe + restante);
             Response <?> respuestaNumPagos = providerRestTemplate.consumirServicio(bean.obtenernumeroPagos(idPlanSFPA.toString()).getDatos(), consultas + "/consulta", authentication);
             JsonArray arrayNpagos = (JsonArray) JsonParser.parseString(respuestaNumPagos.getDatos().toString());
             JsonObject objNpagos = (JsonObject) JsonParser.parseString(arrayNpagos.get(0).toString());
