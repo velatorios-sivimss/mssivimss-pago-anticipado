@@ -115,6 +115,16 @@ public class PagoAnticipadoSFPAController {
         return CompletableFuture
                 .supplyAsync(() -> new ResponseEntity<>(response, HttpStatus.valueOf(response.getCodigo())));
     }
+    
+    @CircuitBreaker(name = "msflujo", fallbackMethod = "fallbackGenerico")
+    @Retry(name = "msflujo", fallbackMethod = "fallbackGenerico")
+    @TimeLimiter(name = "msflujo")
+    @PostMapping("/descargar-reporte-pa")
+    public CompletableFuture<?> descargarReportePa(@RequestBody DatosRequest request, Authentication authentication) throws IOException, ParseException {
+        Response<?> response = servicio.descargarReportePA(request, authentication);
+        return CompletableFuture
+                .supplyAsync(() -> new ResponseEntity<>(response, HttpStatus.valueOf(response.getCodigo())));
+    }
 
     /**
      * fallbacks generico
