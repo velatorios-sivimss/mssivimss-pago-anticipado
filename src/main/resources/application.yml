@@ -31,7 +31,9 @@ logging:
 endpoints:
    mod-catalogos: ${msit_CATALOGOS}
    ms-reportes: ${msit_REPORTES_GENERALES}
-   
+
+data:
+  msit_REPORTE_PA: reportes/modulo/ReportePACU51.jrxml 
 
 jwt:
   secretkey-flujo: ${msit_SECRET_KEY}
