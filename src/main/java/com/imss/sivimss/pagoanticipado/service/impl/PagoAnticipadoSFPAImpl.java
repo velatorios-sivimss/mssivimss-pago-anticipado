@@ -31,6 +31,10 @@ public class PagoAnticipadoSFPAImpl implements PagoAnticipadoSFPAService {
     private String consultas;
     @Value("${endpoints.ms-reportes}")
     private String urlReportes;
+    
+    @Value("${data.msit_REPORTE_PA}")
+    private String reportePa;
+    
     @Autowired
     private ProviderServiceRestTemplate providerRestTemplate;
     @Autowired
@@ -201,6 +205,15 @@ public class PagoAnticipadoSFPAImpl implements PagoAnticipadoSFPAService {
         return providerRestTemplate.consumirServicioReportes(envioDatos, urlReportes,
                 authentication);
     }
+    
+    @Override
+    public Response<?> descargarReportePA(DatosRequest request, Authentication authentication) throws IOException, ParseException {
+        String datosJson = String.valueOf(request.getDatos().get(AppConstantes.DATOS));
+        ReportePaDto reporteRequest = json.fromJson(datosJson, ReportePaDto.class);
+        Map<String, Object> envioDatos = generarDatosReportePa(reporteRequest);
+        return providerRestTemplate.consumirServicioReportes(envioDatos, urlReportes,
+                authentication);
+    }
 
     public Integer buscarIdContratante(String nombreContratante, Authentication authentication) throws IOException {
         int espacios = 1;
@@ -303,6 +316,39 @@ public class PagoAnticipadoSFPAImpl implements PagoAnticipadoSFPAService {
         datosReporte.put("tipoReporte",reporteRequest.getTipoReporte());
         datosReporte.put("idVelatorio",idVelatorio);
         datosReporte.put("consulta",consulta);
+        return datosReporte;
+    }
+    
+    public Map<String,Object> generarDatosReportePa(ReportePaDto reporteRequest) throws IOException {
+        Map<String, Object> datosReporte = new HashMap<>();
+        String fechaInicio = validaNull(reporteRequest.getFecha_inicial());
+        String fechaFin = validaNull(reporteRequest.getFecha_final());
+        StringBuilder consulta = new StringBuilder("");
+        String periodo="";
+        
+        if(Objects.nonNull(reporteRequest.getId_delegacion())){
+            consulta.append(" AND VP.ID_DELEGACION = " + reporteRequest.getId_delegacion());
+        }
+        
+        if(Objects.nonNull(reporteRequest.getId_velatorio())){
+            consulta.append(" AND PLAN.ID_VELATORIO = " + reporteRequest.getId_velatorio());
+        }
+        if(!fechaInicio.equals("")){
+            consulta.append(" AND PLAN.FEC_INGRESO >= STR_TO_DATE('"+fechaInicio+"','%d-%m-%Y') ");
+            periodo=fechaInicio;
+        }
+        if(!fechaFin.equals("")) {
+        	consulta.append(" AND PLAN.FEC_INGRESO  <= STR_TO_DATE('"+fechaFin+"','%d-%m-%Y') ");
+        	 periodo+="  -  "+fechaFin;
+        }
+        
+  
+        datosReporte.put("consultaOrdenes",consulta.toString());
+        datosReporte.put("periodo",periodo);
+        datosReporte.put("velatorio",validaNull(reporteRequest.getNombreVelatorio()));
+        datosReporte.put("rutaNombreReporte",reportePa);
+        datosReporte.put("tipoReporte",reporteRequest.getTipoReporte());
+        log.info(datosReporte.get("consultaOrdenes").toString());
         return datosReporte;
     }
 }

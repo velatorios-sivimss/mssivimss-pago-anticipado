@@ -18,4 +18,6 @@ public interface PagoAnticipadoSFPAService {
 
     Response<?> generarPDF(DatosRequest request, Authentication authentication) throws IOException;
     Response<?> descargarDocumento(DatosRequest request, Authentication authentication) throws IOException, ParseException;
+	Response<?> descargarReportePA(DatosRequest request, Authentication authentication)
+			throws IOException, ParseException;
 }
