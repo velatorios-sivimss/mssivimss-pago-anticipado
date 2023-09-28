@@ -175,9 +175,9 @@ public class BusquedasPlanSFPA {
                         "PAQ.DES_NOM_PAQUETE AS nombrePaquete","CONCAT(SP.NOM_PERSONA , ' ', SP.NOM_PRIMER_APELLIDO, ' ', SP.NOM_SEGUNDO_APELLIDO) AS contratanteSubstituto"
                 ,"SP.DES_CORREO AS correo","SD.DES_ESTADO  AS estado","VEL.DES_VELATORIO AS velatorio","EST.DES_ESTATUS_PLAN_SFPA AS estatusPlan",
                 "PAQ.MON_PRECIO AS total",
-                        "(SELECT (PLAN.MON_PRECIO - SUM(SBPA.DES_IMPORTE)) AS restante FROM SVC_BITACORA_PAGO_ANTICIPADO SBPA LEFT JOIN SVT_PLAN_SFPA PLAN on SBPA .ID_PLAN_SFPA" +
+                        "(SELECT (PLAN.MON_PRECIO - SUM(SBPA.DES_IMPORTE)) AS restante FROM SVC_BITACORA_PAGO_ANTICIPADO SBPA LEFT JOIN SVT_PLAN_SFPA PLAN on SBPA.ID_PLAN_SFPA  = PLAN.ID_PLAN_SFPA" +
                                 " LEFT JOIN SVC_PAGO_SFPA SFPA on SBPA.ID_BITACORA_PAGO = SFPA.ID_BITACORA_PAGO " +
-                                " = PLAN.ID_PLAN_SFPA WHERE SBPA.ID_PLAN_SFPA = " + idPlan + " AND SFPA.ID_ESTATUS_PAGO != 3 ) AS restante")
+                                " WHERE SBPA.ID_PLAN_SFPA = " + idPlan + " AND SFPA.ID_ESTATUS_PAGO != 3 ) AS restante")
                 .from("SVT_PLAN_SFPA SPS")
                 .leftJoin("SVC_TIPO_PAGO_MENSUAL TPM","SPS.ID_TIPO_PAGO_MENSUAL = TPM.ID_TIPO_PAGO_MENSUAL")
                 .leftJoin("SVT_PAQUETE PAQ","SPS.ID_PAQUETE = PAQ.ID_PAQUETE")
