@@ -111,6 +111,7 @@ public class BusquedasPlanSFPA {
                 .leftJoin("SVC_TIPO_PAGO_MENSUAL TP","SPS.ID_TIPO_PAGO_MENSUAL = TP.ID_TIPO_PAGO_MENSUAL")
                 .where("SPS.ID_PLAN_SFPA = " + idPlan);
         String consulta = query.build();
+        log.info("q - " + consulta);
         String encoded = DatatypeConverter.printBase64Binary(consulta.getBytes());
         parametro.put(AppConstantes.QUERY, encoded);
         dr.setDatos(parametro);
@@ -201,7 +202,7 @@ public class BusquedasPlanSFPA {
         SelectQueryUtil query = new SelectQueryUtil();
         query.select("SBP.ID_BITACORA_PAGO as idBitacoraPago", "SBP.NOM_BANCO as nombreBanco",
                 "CONCAT(row_number() over (order by SBP.ID_BITACORA_PAGO) ,'/',TPM.DES_TIPO_PAGO_MENSUAL) as pagos",
-                        "IFNULL(SBP.FEC_FECHA_PAGO,IFNULL(SBP.FEC_ALTA,'')) AS fechaPago","MP.DESC_METODO_PAGO AS metodoPago","SBP.ID_METODO_PAGO as idMetodoPago",
+                        "DATE_FORMAT(IFNULL(SBP.FEC_FECHA_PAGO,IFNULL(SBP.FEC_ALTA,'')),'%d/%m/%Y') AS fechaPago","MP.DESC_METODO_PAGO AS metodoPago","SBP.ID_METODO_PAGO as idMetodoPago",
                         "SBP.NUM_AUTORIZACION AS numeroAutorizacion","SBP.DES_FOLIO_AUTORIZACION as folioAutorizacion",
                         "SBP.DES_IMPORTE AS importePago","EST.DES_ESTATUS_PAGO_ANTICIPADO AS estatusPago","VEL.DES_VELATORIO AS velatorio",
                         "SBP.DES_IMPORTE AS monto","LPAD(SBP.ID_BITACORA_PAGO,5,'0') as noReciboPago")
