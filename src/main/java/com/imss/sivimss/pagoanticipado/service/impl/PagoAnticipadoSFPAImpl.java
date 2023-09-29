@@ -52,7 +52,6 @@ public class PagoAnticipadoSFPAImpl implements PagoAnticipadoSFPAService {
     @Override
     public Response<?> buscarPlanSFPA(DatosRequest request, Authentication authentication) throws IOException {
         String datosJson = String.valueOf(request.getDatos().get(AppConstantes.DATOS));
-       log.info("ds -> " + datosJson);
         BusquedaRequest busquedaRequest = json.fromJson(datosJson, BusquedaRequest.class);
         String folio = validaNull(busquedaRequest.getFolio());
         String fechaInicio = validaNull(busquedaRequest.getFechaInicio());
