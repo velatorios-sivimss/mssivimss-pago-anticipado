@@ -6,9 +6,9 @@ import lombok.Data;
 public class ReporteRequest {
 
     private String tipoReporte;
-    private String idVelatorio;
-    private String folioPlan;
-    private String fechaInicio;
-    private String fechaFin;
     private String nombreContratante;
+    private Integer idPlan ;
+    private String correoElectronico;
+    private String paquete;
+    private String estado;
 }

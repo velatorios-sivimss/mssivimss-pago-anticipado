@@ -201,7 +201,7 @@ public class PagoAnticipadoSFPAImpl implements PagoAnticipadoSFPAService {
     public Response<?> descargarDocumento(DatosRequest request, Authentication authentication) throws IOException, ParseException {
         String datosJson = String.valueOf(request.getDatos().get(AppConstantes.DATOS));
         ReporteRequest reporteRequest = json.fromJson(datosJson, ReporteRequest.class);
-        Map<String, Object> envioDatos = generarDatosReporteGeneral(reporteRequest,authentication);
+        Map<String, Object> envioDatos = generarDatosReporteGeneral(reporteRequest);
         return providerRestTemplate.consumirServicioReportes(envioDatos, urlReportes,
                 authentication);
     }
@@ -292,30 +292,15 @@ public class PagoAnticipadoSFPAImpl implements PagoAnticipadoSFPAService {
         return datosPdf;
     }
 
-    public Map<String,Object> generarDatosReporteGeneral(ReporteRequest reporteRequest,Authentication authentication) throws IOException {
+    public Map<String,Object> generarDatosReporteGeneral(ReporteRequest reporteRequest) throws IOException {
         Map<String, Object> datosReporte = new HashMap<>();
-        String folio = validaNull(reporteRequest.getFolioPlan());
-        String fechaInicio = validaNull(reporteRequest.getFechaInicio());
-        String fechaFin = validaNull(reporteRequest.getFechaFin());
-        String nombreTitularSustituto = validaNull(reporteRequest.getNombreContratante());
-        String idVelatorio = validaNull(reporteRequest.getIdVelatorio());
-        String consulta = "";
-        if(!folio.equals("")){
-            consulta += " AND SP.NUM_FOLIO_PLAN_SFPA = '" + folio + "'";
-        }
-        if(!fechaInicio.equals("") && !fechaFin.equals("")){
-            consulta += " AND SP.FEC_INGRESO BETWEEN '" + fechaInicio + "' AND '" + fechaFin + "'";
-        }
-        if(!idVelatorio.equals("")){
-            consulta += " AND SP.ID_VELATORIO = " + idVelatorio;
-        }
-        if(!buscarIdContratante(nombreTitularSustituto, authentication).toString().equals("0")){
-            consulta +=" AND SP.ID_TITULAR_SUBSTITUTO = " + buscarIdContratante(nombreTitularSustituto, authentication).toString();
-        }
         datosReporte.put("rutaNombreReporte","reportes/generales/ReporteConsultaPagosAnticipadosSpfa.jrxml");
         datosReporte.put("tipoReporte",reporteRequest.getTipoReporte());
-        datosReporte.put("idVelatorio",idVelatorio);
-        datosReporte.put("consulta",consulta);
+        datosReporte.put("idPlan",reporteRequest.getIdPlan());
+        datosReporte.put("correoElectronico",reporteRequest.getCorreoElectronico());
+        datosReporte.put("paquete",reporteRequest.getPaquete());
+        datosReporte.put("estado",reporteRequest.getEstado());
+        datosReporte.put("nombreContratante",reporteRequest.getNombreContratante());
         return datosReporte;
     }
     
@@ -342,7 +327,7 @@ public class PagoAnticipadoSFPAImpl implements PagoAnticipadoSFPAService {
         	 periodo+="  -  "+fechaFin;
         }
         
-  
+
         datosReporte.put("consultaOrdenes",consulta.toString());
         datosReporte.put("periodo",periodo);
         datosReporte.put("velatorio",validaNull(reporteRequest.getNombreVelatorio()));
