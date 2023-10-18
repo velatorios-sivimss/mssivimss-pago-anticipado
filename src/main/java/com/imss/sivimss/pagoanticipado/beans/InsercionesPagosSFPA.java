@@ -22,11 +22,11 @@ public class InsercionesPagosSFPA {
         String fecPago = Objects.isNull(registrarPagoRequest.getFechaPago()) ? "" : "'" + registrarPagoRequest.getFechaPago() + "'";
         final QueryHelper queryHelper = new QueryHelper("INSERT SVC_BITACORA_PAGO_ANTICIPADO");
         queryHelper.agregarParametroValues("ID_PLAN_SFPA", String.valueOf(registrarPagoRequest.getIdPlan()));
-        queryHelper.agregarParametroValues("FEC_FECHA_PAGO", fecPago);
+        queryHelper.agregarParametroValues("FEC_PAGO", fecPago);
         queryHelper.agregarParametroValues("NUM_AUTORIZACION", setValor(registrarPagoRequest.getNumeroAutorizacion()));
-        queryHelper.agregarParametroValues("NOM_BANCO", "'" + registrarPagoRequest.getNombreBanco() + "'");
-        queryHelper.agregarParametroValues("DES_IMPORTE", setValor(registrarPagoRequest.getImporte()));
-        queryHelper.agregarParametroValues("DES_TOTAL_RESTANTE", "'" + montoRestante + "'");
+        queryHelper.agregarParametroValues("REF_BANCO", "'" + registrarPagoRequest.getNombreBanco() + "'");
+        queryHelper.agregarParametroValues("IMP_PAGO", setValor(registrarPagoRequest.getImporte()));
+        queryHelper.agregarParametroValues("IMP_TOTAL_RESTANTE", "'" + montoRestante + "'");
         queryHelper.agregarParametroValues("ID_METODO_PAGO", "'" + registrarPagoRequest.getIdTipoPago() + "'");
         queryHelper.agregarParametroValues("ID_USUARIO_ALTA", "'" + usuario + "'");
         String qr = queryHelper.obtenerQueryInsertar() + " -- " + insertarPago(montoInicial, registrarPagoRequest.getIdTipoPago(), usuario, String.valueOf(registrarPagoRequest.getIdPlan()), mesesPagar, desMeses);

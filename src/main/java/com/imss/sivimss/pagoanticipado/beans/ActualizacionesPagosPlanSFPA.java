@@ -83,21 +83,21 @@ public class ActualizacionesPagosPlanSFPA {
         Map<String, Object> parametro = new HashMap<>();
         final QueryHelper q = new QueryHelper("UPDATE SVC_BITACORA_PAGO_ANTICIPADO");
         if(!Objects.isNull(request.getFechaPago())){
-        q.agregarParametroValues("FEC_FECHA_PAGO","'" + request.getFechaPago() + "'");
+        q.agregarParametroValues("FEC_PAGO","'" + request.getFechaPago() + "'");
         }
         if(!Objects.isNull(request.getNumeroAutorizacion())){
             q.agregarParametroValues("NUM_AUTORIZACION","'" + request.getNumeroAutorizacion()+ "'");
         }
         if(!Objects.isNull(request.getFolioAutorizacion())){
-            q.agregarParametroValues("DES_FOLIO_AUTORIZACION","'" + request.getFolioAutorizacion()+ "'");
+            q.agregarParametroValues("REF_FOLIO_AUTORIZACION","'" + request.getFolioAutorizacion()+ "'");
         }
         if(!Objects.isNull(request.getIdTipoPago())){
             q.agregarParametroValues("ID_METODO_PAGO","'" + request.getIdTipoPago()+ "'");
         }
         if(!Objects.isNull(request.getImporte())){
-            q.agregarParametroValues("DES_IMPORTE","'" + request.getImporte()+ "'");
+            q.agregarParametroValues("IMP_PAGO","'" + request.getImporte()+ "'");
         }
-        q.agregarParametroValues("NOM_BANCO", "'" + request.getNombreBanco()+ "'");
+        q.agregarParametroValues("REF_BANCO", "'" + request.getNombreBanco()+ "'");
         q.addWhere("ID_BITACORA_PAGO = " + request.getIdPago());
         String query = q.obtenerQueryActualizar();
         log.info(query);
@@ -126,7 +126,7 @@ public class ActualizacionesPagosPlanSFPA {
         DatosRequest dr = new DatosRequest();
         Map<String, Object> parametro = new HashMap<>();
         final QueryHelper q = new QueryHelper("UPDATE SVC_BITACORA_PAGO_ANTICIPADO");
-        q.agregarParametroValues("DES_TOTAL_RESTANTE","'" + nuevoRestante + "'");
+        q.agregarParametroValues("IMP_TOTAL_RESTANTE","'" + nuevoRestante + "'");
         q.addWhere("ID_BITACORA_PAGO = " + idPagoBitacora);
         String query = q.obtenerQueryActualizar();
         log.info(query);

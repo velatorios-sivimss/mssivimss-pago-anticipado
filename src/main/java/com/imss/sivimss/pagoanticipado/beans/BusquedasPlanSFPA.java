@@ -136,7 +136,7 @@ public class BusquedasPlanSFPA {
         DatosRequest dr = new DatosRequest();
         Map<String, Object> parametro = new HashMap<>();
         SelectQueryUtil query = new SelectQueryUtil();
-        query.select("SBP.DES_TOTAL_RESTANTE AS totalRestante")
+        query.select("SBP.IMP_TOTAL_RESTANTE AS totalRestante")
                 .from ("SVC_BITACORA_PAGO_ANTICIPADO SBP")
                 .where("SBP.ID_BITACORA_PAGO = (SELECT MAX(SBP.ID_BITACORA_PAGO) FROM SVC_BITACORA_PAGO_ANTICIPADO SBP WHERE SBP.ID_PLAN_SFPA = " + idPlan + ")");
         String consulta = query.build();
@@ -151,7 +151,7 @@ public class BusquedasPlanSFPA {
         SelectQueryUtil query = new SelectQueryUtil();
         query.select("SPS.NUM_FOLIO_PLAN_SFPA AS numeroFolio","PM.DES_TIPO_PAGO_MENSUAL AS totalMensualidades","COUNT(BP.ID_BITACORA_PAGO) AS pagosRealizados",
                 "CONCAT(PER.NOM_PERSONA, ' ', PER.NOM_PRIMER_APELLIDO, ' ', PER.NOM_SEGUNDO_APELLIDO) AS nombreContratante",
-                "BP.DES_IMPORTE AS importe","PAQ.DES_NOM_PAQUETE AS nombrePaquete","SV.DES_VELATORIO AS velatorio")
+                "BP.IMP_PAGO AS importe","PAQ.DES_NOM_PAQUETE AS nombrePaquete","SV.DES_VELATORIO AS velatorio")
                 .from("SVT_PLAN_SFPA SPS")
                 .leftJoin("SVC_TIPO_PAGO_MENSUAL PM","SPS.ID_TIPO_PAGO_MENSUAL = PM.ID_TIPO_PAGO_MENSUAL")
                 .leftJoin("SVC_BITACORA_PAGO_ANTICIPADO BP","SPS.ID_PLAN_SFPA = BP.ID_PLAN_SFPA AND BP.IND_ACTIVO =1")
@@ -174,9 +174,9 @@ public class BusquedasPlanSFPA {
         SelectQueryUtil query = new SelectQueryUtil();
         query.select("SPS.ID_PLAN_SFPA AS idPlan","SPS.NUM_FOLIO_PLAN_SFPA AS numFolio","TPM.DES_TIPO_PAGO_MENSUAL AS desNumeroPagos",
                         "PAQ.DES_NOM_PAQUETE AS nombrePaquete","CONCAT(SP.NOM_PERSONA , ' ', SP.NOM_PRIMER_APELLIDO, ' ', SP.NOM_SEGUNDO_APELLIDO) AS contratanteSubstituto"
-                ,"SP.DES_CORREO AS correo","SD.DES_ESTADO  AS estado","VEL.DES_VELATORIO AS velatorio","EST.DES_ESTATUS_PLAN_SFPA AS estatusPlan",
+                ,"SP.REF_CORREO AS correo","SD.REF_ESTADO  AS estado","VEL.DES_VELATORIO AS velatorio","EST.DES_ESTATUS_PLAN_SFPA AS estatusPlan",
                 "PAQ.MON_PRECIO AS total",
-                        "(SELECT (PLAN.MON_PRECIO - SUM(SBPA.DES_IMPORTE)) AS restante FROM SVC_BITACORA_PAGO_ANTICIPADO SBPA LEFT JOIN SVT_PLAN_SFPA PLAN on SBPA.ID_PLAN_SFPA  = PLAN.ID_PLAN_SFPA" +
+                        "(SELECT (PLAN.MON_PRECIO - SUM(SBPA.IMP_PAGO)) AS restante FROM SVC_BITACORA_PAGO_ANTICIPADO SBPA LEFT JOIN SVT_PLAN_SFPA PLAN on SBPA.ID_PLAN_SFPA  = PLAN.ID_PLAN_SFPA" +
                                 " LEFT JOIN SVC_PAGO_SFPA SFPA on SBPA.ID_BITACORA_PAGO = SFPA.ID_BITACORA_PAGO " +
                                 " WHERE SBPA.ID_PLAN_SFPA = " + idPlan + " AND SFPA.ID_ESTATUS_PAGO != 3 ) AS restante")
                 .from("SVT_PLAN_SFPA SPS")
@@ -200,12 +200,12 @@ public class BusquedasPlanSFPA {
         DatosRequest dr = new DatosRequest();
         Map<String, Object> parametro = new HashMap<>();
         SelectQueryUtil query = new SelectQueryUtil();
-        query.select("SBP.ID_BITACORA_PAGO as idBitacoraPago", "SBP.NOM_BANCO as nombreBanco",
+        query.select("SBP.ID_BITACORA_PAGO as idBitacoraPago", "SBP.REF_BANCO as nombreBanco",
                 "CONCAT(row_number() over (order by SBP.ID_BITACORA_PAGO) ,'/',TPM.DES_TIPO_PAGO_MENSUAL) as pagos",
-                        "DATE_FORMAT(IFNULL(SBP.FEC_FECHA_PAGO,IFNULL(SBP.FEC_ALTA,'')),'%d/%m/%Y') AS fechaPago","MP.DESC_METODO_PAGO AS metodoPago","SBP.ID_METODO_PAGO as idMetodoPago",
-                        "SBP.NUM_AUTORIZACION AS numeroAutorizacion","SBP.DES_FOLIO_AUTORIZACION as folioAutorizacion",
-                        "SBP.DES_IMPORTE AS importePago","EST.DES_ESTATUS_PAGO_ANTICIPADO AS estatusPago","VEL.DES_VELATORIO AS velatorio",
-                        "SBP.DES_IMPORTE AS monto","LPAD(SBP.ID_BITACORA_PAGO,5,'0') as noReciboPago")
+                        "DATE_FORMAT(IFNULL(SBP.FEC_PAGO,IFNULL(SBP.FEC_ALTA,'')),'%d/%m/%Y') AS fechaPago","MP.DESC_METODO_PAGO AS metodoPago","SBP.ID_METODO_PAGO as idMetodoPago",
+                        "SBP.NUM_AUTORIZACION AS numeroAutorizacion","SBP.REF_FOLIO_AUTORIZACION as folioAutorizacion",
+                        "SBP.IMP_PAGO AS importePago","EST.DES_ESTATUS_PAGO_ANTICIPADO AS estatusPago","VEL.DES_VELATORIO AS velatorio",
+                        "SBP.IMP_PAGO AS monto","LPAD(SBP.ID_BITACORA_PAGO,5,'0') as noReciboPago")
                 .from("SVC_PAGO_SFPA SPS")
                 .innerJoin("SVC_BITACORA_PAGO_ANTICIPADO SBP","SPS.ID_BITACORA_PAGO = SBP.ID_BITACORA_PAGO AND SBP.IND_ACTIVO = 1")
                 .leftJoin("SVC_TIPO_PAGO_MENSUAL TPM","SPS.ID_TIPO_PAGO_MENSUAL = TPM.ID_TIPO_PAGO_MENSUAL")
@@ -226,7 +226,7 @@ public class BusquedasPlanSFPA {
         DatosRequest dr = new DatosRequest();
         Map<String, Object> parametro = new HashMap<>();
         SelectQueryUtil query = new SelectQueryUtil();
-        query.select("PA.DES_IMPORTE", "PA.DES_TOTAL_RESTANTE","PA.ID_PLAN_SFPA")
+        query.select("PA.IMP_PAGO", "PA.IMP_TOTAL_RESTANTE","PA.ID_PLAN_SFPA")
                 .from("SVC_BITACORA_PAGO_ANTICIPADO PA")
                 .where("PA.ID_BITACORA_PAGO = " + idPagoBitacora);
         String consulta = query.build();
@@ -241,7 +241,7 @@ public class BusquedasPlanSFPA {
         DatosRequest dr = new DatosRequest();
         Map<String, Object> parametro = new HashMap<>();
         SelectQueryUtil query = new SelectQueryUtil();
-        query.select("MAX(SBPA.ID_BITACORA_PAGO) AS idPagoBitacora" , "SBPA.DES_TOTAL_RESTANTE AS restante")
+        query.select("MAX(SBPA.ID_BITACORA_PAGO) AS idPagoBitacora" , "SBPA.IMP_TOTAL_RESTANTE AS restante")
                 .from("SVC_BITACORA_PAGO_ANTICIPADO SBPA")
                 .where("SBPA.ID_PLAN_SFPA = " + idPlan)
                 .and("SBPA.IND_ACTIVO = 1");
@@ -257,7 +257,7 @@ public class BusquedasPlanSFPA {
         DatosRequest dr = new DatosRequest();
         Map<String, Object> parametro = new HashMap<>();
         SelectQueryUtil query = new SelectQueryUtil();
-        query.select("SBPA.DES_TOTAL_RESTANTE AS restante")
+        query.select("SBPA.IMP_TOTAL_RESTANTE AS restante")
                 .from("SVC_BITACORA_PAGO_ANTICIPADO SBPA")
                 .where("SBPA.ID_PLAN_SFPA = " + idPlan)
                 .and("SBPA .ID_BITACORA_PAGO = (SELECT MAX(PA.ID_BITACORA_PAGO) FROM SVC_BITACORA_PAGO_ANTICIPADO PA WHERE PA.ID_PLAN_SFPA =" + idPlan +")");
