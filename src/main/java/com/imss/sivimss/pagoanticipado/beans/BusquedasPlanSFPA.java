@@ -151,13 +151,14 @@ public class BusquedasPlanSFPA {
         SelectQueryUtil query = new SelectQueryUtil();
         query.select("SPS.NUM_FOLIO_PLAN_SFPA AS numeroFolio","PM.DES_TIPO_PAGO_MENSUAL AS totalMensualidades","COUNT(BP.ID_BITACORA_PAGO) AS pagosRealizados",
                 "CONCAT(PER.NOM_PERSONA, ' ', PER.NOM_PRIMER_APELLIDO, ' ', PER.NOM_SEGUNDO_APELLIDO) AS nombreContratante",
-                "BP.IMP_PAGO AS importe","PAQ.DES_NOM_PAQUETE AS nombrePaquete","SV.DES_VELATORIO AS velatorio")
+                "BP.IMP_PAGO AS importe","PAQ.REF_PAQUETE_NOMBRE AS nombrePaquete","SV.DES_VELATORIO AS velatorio")
                 .from("SVT_PLAN_SFPA SPS")
                 .leftJoin("SVC_TIPO_PAGO_MENSUAL PM","SPS.ID_TIPO_PAGO_MENSUAL = PM.ID_TIPO_PAGO_MENSUAL")
                 .leftJoin("SVC_BITACORA_PAGO_ANTICIPADO BP","SPS.ID_PLAN_SFPA = BP.ID_PLAN_SFPA AND BP.IND_ACTIVO =1")
                 .leftJoin("SVC_CONTRATANTE CON","SPS.ID_TITULAR_SUBSTITUTO = CON.ID_CONTRATANTE")
                 .leftJoin("SVC_PERSONA PER", "CON.ID_PERSONA = PER.ID_PERSONA")
                 .leftJoin("SVC_VELATORIO SV","SPS.ID_VELATORIO = SV.ID_VELATORIO")
+                .leftJoin("SVT_PAQUETE PAQ","SPS.ID_PAQUETE = PAQ.ID_PAQUETE")
                 .where("SPS.ID_PLAN_SFPA = " + idPlan);
                 //.and("BP.ID_BITACORA_PAGO = (SELECT MAX(SBP.ID_BITACORA_PAGO) FROM SVC_BITACORA_PAGO_ANTICIPADO SBP WHERE SBP.ID_PLAN_SFPA = " + idPlan +")");
         String consulta = query.build();
