@@ -45,7 +45,7 @@ public class InsercionesPagosSFPA {
         q.agregarParametroValues("ID_FLUJO_PAGOS", "'4'");
         q.agregarParametroValues("ID_TIPO_PAGO_MENSUAL", mesesPagar);
         q.agregarParametroValues("IMP_TOTAL", "'" + montoTotalInicial + "'");
-        q.agregarParametroValues("DES_MONTO_MENSUAL", "'" + montoMensual + "'");
+        q.agregarParametroValues("IMP_MONTO_MENSUAL", "'" + montoMensual + "'");
         q.agregarParametroValues("ID_METODO_PAGO", "'" + idTipoPago + "'");
         q.agregarParametroValues("ID_USUARIO_ALTA", "'" + usuario + "'");
         q.agregarParametroValues("ID_BITACORA_PAGO", "idTabla");

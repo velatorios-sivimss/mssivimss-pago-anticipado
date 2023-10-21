@@ -18,10 +18,10 @@ public class BusquedasPlanSFPA {
         SelectQueryUtil query = new SelectQueryUtil();
         query.select("SP.FEC_INGRESO AS fecha","SP.ID_PLAN_SFPA AS idPlan", "SP.NUM_FOLIO_PLAN_SFPA AS folio", "SP.ID_TITULAR_SUBSTITUTO AS idTitularSustituto",
                         "SP.ID_TIPO_PAGO_MENSUAL AS idTipoPago", "TP.DES_TIPO_PAGO_MENSUAL AS tipoPagosMensuales" ,
-                        "FORMAT(SP.MON_PRECIO / TP.DES_TIPO_PAGO_MENSUAL,2) as pagoMensual",
+                        "FORMAT(SP.IMP_PRECIO / TP.DES_TIPO_PAGO_MENSUAL,2) as pagoMensual",
                         "SP.ID_ESTATUS_PLAN_SFPA AS idEstatusPlan",
                         "EST.DES_ESTATUS_PLAN_SFPA AS estatusPlan",
-                        "SP.ID_PAQUETE AS idPaquete", "PAQ.DES_NOM_PAQUETE AS paquete", "FORMAT(SP.MON_PRECIO,2) AS monto    ",
+                        "SP.ID_PAQUETE AS idPaquete", "PAQ.DES_NOM_PAQUETE AS paquete", "FORMAT(SP.IMP_PRECIO,2) AS monto    ",
                         "CONCAT(PER.NOM_PERSONA, ' ', PER.NOM_PRIMER_APELLIDO, ' ', PER.NOM_SEGUNDO_APELLIDO) AS nombreTitularSustituto")
                 .from("SVT_PLAN_SFPA SP")
                 .leftJoin("SVT_PAQUETE PAQ", "SP.ID_PAQUETE = PAQ.ID_PAQUETE")
@@ -92,7 +92,7 @@ public class BusquedasPlanSFPA {
         DatosRequest dr = new DatosRequest();
         Map<String, Object> parametro = new HashMap<>();
         SelectQueryUtil query = new SelectQueryUtil();
-        query.select("SMP.ID_METODO_PAGO AS idMetodoPago", "SMP.DESC_METODO_PAGO AS metodoPago")
+        query.select("SMP.ID_METODO_PAGO AS idMetodoPago", "SMP.DES_METODO_PAGO AS metodoPago")
                 .from("SVC_METODO_PAGO SMP")
                 .where("SMP.ID_METODO_PAGO IN(3,4,6,7)");
         String consulta = query.build();
@@ -106,7 +106,7 @@ public class BusquedasPlanSFPA {
         DatosRequest dr = new DatosRequest();
         Map<String, Object> parametro = new HashMap<>();
         SelectQueryUtil query = new SelectQueryUtil();
-        query.select("SPS.MON_PRECIO AS importeTotal","SPS.ID_TIPO_PAGO_MENSUAL AS mesesPagar","TP.DES_TIPO_PAGO_MENSUAL as desMeses")
+        query.select("SPS.IMP_PRECIO AS importeTotal","SPS.ID_TIPO_PAGO_MENSUAL AS mesesPagar","TP.DES_TIPO_PAGO_MENSUAL as desMeses")
                 .from ("SVT_PLAN_SFPA SPS")
                 .leftJoin("SVC_TIPO_PAGO_MENSUAL TP","SPS.ID_TIPO_PAGO_MENSUAL = TP.ID_TIPO_PAGO_MENSUAL")
                 .where("SPS.ID_PLAN_SFPA = " + idPlan);
@@ -176,8 +176,8 @@ public class BusquedasPlanSFPA {
         query.select("SPS.ID_PLAN_SFPA AS idPlan","SPS.NUM_FOLIO_PLAN_SFPA AS numFolio","TPM.DES_TIPO_PAGO_MENSUAL AS desNumeroPagos",
                         "PAQ.DES_NOM_PAQUETE AS nombrePaquete","CONCAT(SP.NOM_PERSONA , ' ', SP.NOM_PRIMER_APELLIDO, ' ', SP.NOM_SEGUNDO_APELLIDO) AS contratanteSubstituto"
                 ,"SP.REF_CORREO AS correo","SD.REF_ESTADO  AS estado","VEL.DES_VELATORIO AS velatorio","EST.DES_ESTATUS_PLAN_SFPA AS estatusPlan",
-                "PAQ.MON_PRECIO AS total",
-                        "(SELECT (PLAN.MON_PRECIO - SUM(SBPA.IMP_PAGO)) AS restante FROM SVC_BITACORA_PAGO_ANTICIPADO SBPA LEFT JOIN SVT_PLAN_SFPA PLAN on SBPA.ID_PLAN_SFPA  = PLAN.ID_PLAN_SFPA" +
+                "PAQ.IMP_PRECIO AS total",
+                        "(SELECT (PLAN.IMP_PRECIO - SUM(SBPA.IMP_PAGO)) AS restante FROM SVC_BITACORA_PAGO_ANTICIPADO SBPA LEFT JOIN SVT_PLAN_SFPA PLAN on SBPA.ID_PLAN_SFPA  = PLAN.ID_PLAN_SFPA" +
                                 " LEFT JOIN SVC_PAGO_SFPA SFPA on SBPA.ID_BITACORA_PAGO = SFPA.ID_BITACORA_PAGO " +
                                 " WHERE SBPA.ID_PLAN_SFPA = " + idPlan + " AND SFPA.ID_ESTATUS_PAGO != 3 ) AS restante")
                 .from("SVT_PLAN_SFPA SPS")
@@ -203,7 +203,7 @@ public class BusquedasPlanSFPA {
         SelectQueryUtil query = new SelectQueryUtil();
         query.select("SBP.ID_BITACORA_PAGO as idBitacoraPago", "SBP.REF_BANCO as nombreBanco",
                 "CONCAT(row_number() over (order by SBP.ID_BITACORA_PAGO) ,'/',TPM.DES_TIPO_PAGO_MENSUAL) as pagos",
-                        "DATE_FORMAT(IFNULL(SBP.FEC_PAGO,IFNULL(SBP.FEC_ALTA,'')),'%d/%m/%Y') AS fechaPago","MP.DESC_METODO_PAGO AS metodoPago","SBP.ID_METODO_PAGO as idMetodoPago",
+                        "DATE_FORMAT(IFNULL(SBP.FEC_PAGO,IFNULL(SBP.FEC_ALTA,'')),'%d/%m/%Y') AS fechaPago","MP.DES_METODO_PAGO AS metodoPago","SBP.ID_METODO_PAGO as idMetodoPago",
                         "SBP.NUM_AUTORIZACION AS numeroAutorizacion","SBP.REF_FOLIO_AUTORIZACION as folioAutorizacion",
                         "SBP.IMP_PAGO AS importePago","EST.DES_ESTATUS_PAGO_ANTICIPADO AS estatusPago","VEL.DES_VELATORIO AS velatorio",
                         "SBP.IMP_PAGO AS monto","LPAD(SBP.ID_BITACORA_PAGO,5,'0') as noReciboPago")
