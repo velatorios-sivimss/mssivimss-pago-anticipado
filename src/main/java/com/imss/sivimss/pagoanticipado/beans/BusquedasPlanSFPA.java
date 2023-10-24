@@ -21,7 +21,7 @@ public class BusquedasPlanSFPA {
                         "FORMAT(SP.IMP_PRECIO / TP.DES_TIPO_PAGO_MENSUAL,2) as pagoMensual",
                         "SP.ID_ESTATUS_PLAN_SFPA AS idEstatusPlan",
                         "EST.DES_ESTATUS_PLAN_SFPA AS estatusPlan",
-                        "SP.ID_PAQUETE AS idPaquete", "PAQ.DES_NOM_PAQUETE AS paquete", "FORMAT(SP.IMP_PRECIO,2) AS monto    ",
+                        "SP.ID_PAQUETE AS idPaquete", "PAQ.REF_PAQUETE_NOMBRE AS paquete", "FORMAT(SP.IMP_PRECIO,2) AS monto    ",
                         "CONCAT(PER.NOM_PERSONA, ' ', PER.NOM_PRIMER_APELLIDO, ' ', PER.NOM_SEGUNDO_APELLIDO) AS nombreTitularSustituto")
                 .from("SVT_PLAN_SFPA SP")
                 .leftJoin("SVT_PAQUETE PAQ", "SP.ID_PAQUETE = PAQ.ID_PAQUETE")
@@ -174,9 +174,9 @@ public class BusquedasPlanSFPA {
         Map<String, Object> parametro = new HashMap<>();
         SelectQueryUtil query = new SelectQueryUtil();
         query.select("SPS.ID_PLAN_SFPA AS idPlan","SPS.NUM_FOLIO_PLAN_SFPA AS numFolio","TPM.DES_TIPO_PAGO_MENSUAL AS desNumeroPagos",
-                        "PAQ.DES_NOM_PAQUETE AS nombrePaquete","CONCAT(SP.NOM_PERSONA , ' ', SP.NOM_PRIMER_APELLIDO, ' ', SP.NOM_SEGUNDO_APELLIDO) AS contratanteSubstituto"
+                        "PAQ.REF_PAQUETE_NOMBRE AS nombrePaquete","CONCAT(SP.NOM_PERSONA , ' ', SP.NOM_PRIMER_APELLIDO, ' ', SP.NOM_SEGUNDO_APELLIDO) AS contratanteSubstituto"
                 ,"SP.REF_CORREO AS correo","SD.REF_ESTADO  AS estado","VEL.DES_VELATORIO AS velatorio","EST.DES_ESTATUS_PLAN_SFPA AS estatusPlan",
-                "PAQ.IMP_PRECIO AS total",
+                "PAQ.MON_PRECIO AS total",
                         "(SELECT (PLAN.IMP_PRECIO - SUM(SBPA.IMP_PAGO)) AS restante FROM SVC_BITACORA_PAGO_ANTICIPADO SBPA LEFT JOIN SVT_PLAN_SFPA PLAN on SBPA.ID_PLAN_SFPA  = PLAN.ID_PLAN_SFPA" +
                                 " LEFT JOIN SVC_PAGO_SFPA SFPA on SBPA.ID_BITACORA_PAGO = SFPA.ID_BITACORA_PAGO " +
                                 " WHERE SBPA.ID_PLAN_SFPA = " + idPlan + " AND SFPA.ID_ESTATUS_PAGO != 3 ) AS restante")
