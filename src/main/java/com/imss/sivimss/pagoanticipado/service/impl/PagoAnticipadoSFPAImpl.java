@@ -156,7 +156,7 @@ public class PagoAnticipadoSFPAImpl implements PagoAnticipadoSFPAService {
                     , consultas + "/consulta", authentication);
             JsonArray jsonArray = (JsonArray) JsonParser.parseString(respuestaImportes.getDatos().toString());
             JsonObject jsonObject = (JsonObject) JsonParser.parseString(jsonArray.get(0).toString());
-            Double importe = jsonObject.get("DES_IMPORTE").getAsDouble();
+            Double importe = jsonObject.get("IMP_PAGO").getAsDouble();
             Integer idPlanSFPA = jsonObject.get("ID_PLAN_SFPA").getAsInt();
             Response<?> respuestaIdBP = providerRestTemplate.consumirServicio(bean.obtenerUltimoRegistroActivo(idPlanSFPA.toString()).getDatos()
                     , consultas + "/consulta", authentication);
