@@ -319,11 +319,11 @@ public class PagoAnticipadoSFPAImpl implements PagoAnticipadoSFPAService {
         }
         if(!fechaInicio.equals("")){
             consulta.append(" AND PLAN.FEC_INGRESO >= STR_TO_DATE('"+fechaInicio+"','%d-%m-%Y') ");
-            periodo=fechaInicio;
+            periodo= !fechaFin.equals("")?  "Periodo: del "+fechaInicio:"Periodo: hasta "+fechaInicio;
         }
         if(!fechaFin.equals("")) {
         	consulta.append(" AND PLAN.FEC_INGRESO  <= STR_TO_DATE('"+fechaFin+"','%d-%m-%Y') ");
-        	 periodo+="  -  "+fechaFin;
+        	 periodo+=!fechaInicio.equals("")?"al "+fechaFin:" hasta "+fechaFin;
         }
         
 
