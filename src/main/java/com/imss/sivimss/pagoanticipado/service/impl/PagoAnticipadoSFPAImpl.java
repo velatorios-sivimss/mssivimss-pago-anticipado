@@ -318,12 +318,12 @@ public class PagoAnticipadoSFPAImpl implements PagoAnticipadoSFPAService {
             consulta.append(" AND PLAN.ID_VELATORIO = " + reporteRequest.getId_velatorio());
         }
         if(!fechaInicio.equals("")){
-            consulta.append(" AND PLAN.FEC_INGRESO >= STR_TO_DATE('"+fechaInicio+"','%d-%m-%Y') ");
-            periodo= !fechaFin.equals("")?  "Periodo: del "+fechaInicio:"Periodo: hasta "+fechaInicio;
+            consulta.append(" AND PLAN.FEC_INGRESO >= STR_TO_DATE('"+fechaInicio+"','%d/%m/%Y') ");
+            periodo= !fechaFin.equals("")?  "Periodo: del "+fechaInicio:"Periodo: desde "+fechaInicio;
         }
         if(!fechaFin.equals("")) {
-        	consulta.append(" AND PLAN.FEC_INGRESO  <= STR_TO_DATE('"+fechaFin+"','%d-%m-%Y') ");
-        	 periodo+=!fechaInicio.equals("")?"al "+fechaFin:" hasta "+fechaFin;
+        	consulta.append(" AND PLAN.FEC_INGRESO  <= STR_TO_DATE('"+fechaFin+"','%d/%m/%Y') ");
+        	 periodo+=!fechaInicio.equals("")?" al "+fechaFin:"Periodo: hasta "+fechaFin;
         }
         
 
