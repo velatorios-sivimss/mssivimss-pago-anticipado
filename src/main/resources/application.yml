@@ -9,7 +9,22 @@ spring:
     pathmatch:
       matching-strategy: ANT_PATH_MATCHER
       
-
+  datasource:
+    platform: mariadb
+    driverClassName: org.mariadb.jdbc.Driver
+    url: jdbc:mysql://localhost:3306/SIVIBDDS?useUnicode=true&characterEncoding=utf-8&useJDBCCompliantTimezoneShift=true&useLegacyDatetimeCode=false&serverTimezone=America/Mexico_City #jdbc:mysql://10.102.44.18:3306/SIVIBDDS
+    username: SIVI_USER
+    password: 51V1_US3R
+    timeBetweenEvictionRunsMillis: 1000
+    testWhileIdle: true
+    validationQuery: SELECT 1
+    hikari:
+       max-lifetime: 1800000
+       idle-timeout: 600000
+       connection-timeout: 30000
+       auto-commit: false
+       maximum-pool-size: 7
+       minimum-idle: 10
       
   main:
     allow-circular-references: true
