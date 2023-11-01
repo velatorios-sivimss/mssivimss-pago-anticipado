@@ -107,6 +107,21 @@ public class PagosPlanSFPA {
         return dr;
     }
 
+    public DatosRequest insertarPagoAnticipado(String idPagoBitacora) {
+        DatosRequest dr = new DatosRequest();
+        Map<String, Object> parametro = new HashMap<>();
+        final QueryHelper q = new QueryHelper("UPDATE SVC_PAGO_SFPA");
+        q.agregarParametroValues("IND_ACTIVO", "0");
+        q.agregarParametroValues("ID_ESTATUS_PAGO", "3");
+        q.addWhere("ID_BITACORA_PAGO = " + idPagoBitacora);
+        String query = q.obtenerQueryActualizar();
+        log.info(query);
+        String encoded = DatatypeConverter.printBase64Binary(query.getBytes());
+        parametro.put(AppConstantes.QUERY, encoded);
+        dr.setDatos(parametro);
+        return dr;
+    }
+
     public DatosRequest actualizarNuevoRestante(String idPagoBitacora, String nuevoRestante) {
         DatosRequest dr = new DatosRequest();
         Map<String, Object> parametro = new HashMap<>();
