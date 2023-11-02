@@ -21,7 +21,6 @@ import com.imss.sivimss.pagoanticipado.model.response.ReciboPdfResponse;
 import com.imss.sivimss.pagoanticipado.service.PagoAnticipadoSFPAService;
 import com.imss.sivimss.pagoanticipado.util.*;
 
-import org.hibernate.service.spi.ServiceException;
 import org.json.JSONObject;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -44,6 +43,39 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.logging.Level;
+
+import org.modelmapper.ModelMapper;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.core.Authentication;
+import org.springframework.stereotype.Service;
+
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.gson.Gson;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
+import com.imss.sivimss.pagoanticipado.beans.ActualizacionesPagosPlanSFPA;
+import com.imss.sivimss.pagoanticipado.beans.BusquedasPlanSFPA;
+import com.imss.sivimss.pagoanticipado.beans.InsercionesPagosSFPA;
+import com.imss.sivimss.pagoanticipado.beans.PagosPlanSFPA;
+import com.imss.sivimss.pagoanticipado.model.request.ActualizaPagoRequest;
+import com.imss.sivimss.pagoanticipado.model.request.BusquedaRequest;
+import com.imss.sivimss.pagoanticipado.model.request.ReciboPDFRequest;
+import com.imss.sivimss.pagoanticipado.model.request.RegistrarPagoRequest;
+import com.imss.sivimss.pagoanticipado.model.request.ReportePaDto;
+import com.imss.sivimss.pagoanticipado.model.request.ReporteRequest;
+import com.imss.sivimss.pagoanticipado.model.request.UsuarioDto;
+import com.imss.sivimss.pagoanticipado.model.response.ReciboPdfResponse;
+import com.imss.sivimss.pagoanticipado.service.PagoAnticipadoSFPAService;
+import com.imss.sivimss.pagoanticipado.util.AppConstantes;
+import com.imss.sivimss.pagoanticipado.util.ConvertirImporteLetra;
+import com.imss.sivimss.pagoanticipado.util.Database;
+import com.imss.sivimss.pagoanticipado.util.DatosRequest;
+import com.imss.sivimss.pagoanticipado.util.LogUtil;
+import com.imss.sivimss.pagoanticipado.util.ProviderServiceRestTemplate;
+import com.imss.sivimss.pagoanticipado.util.Response;
 
 @Service
 public class PagoAnticipadoSFPAImpl implements PagoAnticipadoSFPAService {
@@ -461,59 +493,28 @@ public class PagoAnticipadoSFPAImpl implements PagoAnticipadoSFPAService {
     }
 
     @Override
-    public Response<?> bitacoraDetallePagos(DatosRequest request, Authentication authentication)
-            throws IOException, SQLException {
-        Response<?> response = new Response<>();
-        ObjectMapper mapper = new ObjectMapper();
-        Integer idPagoParcialidad = 0;
-        JsonNode datos = mapper.readTree(request.getDatos().get(AppConstantes.DATOS).toString());
-        idPagoParcialidad = datos.get("idPagoParcialidad").asInt();
-        try {
-            connection = database.getConnection();
-            statement = connection.createStatement();
-            String consulta = pagosPlanSFPA.obtenerDetalleBitacoraPago();
+    public Response<?> bitacoraDetallePagos(DatosRequest request, Authentication authentication) throws IOException {
+        // TODO Auto-generated method stub
+        return null;
+    }}
 
-            preparedStatement = connection.prepareStatement(consulta);
-            preparedStatement.setInt(1, idPagoParcialidad);
-            rs = preparedStatement.executeQuery();
-            ResultSetMetaData md = rs.getMetaData();
-            int columns = md.getColumnCount();
-            List<Object> list = new ArrayList<>();
-            if (rs.next()) {
-                while (rs.next()) {
-                    HashMap<String, Object> row = new HashMap<>();
-                    for (int i = 1; i <= columns; ++i) {
-                        row.put(md.getColumnName(i), rs.getObject(i));
-                    }
-                    list.add(row);
-                }
-                response = new Response<>(false, 200, AppConstantes.EXITO, list);
-                return response;
-            }
+    
+    
+    
+        
+    
 
-        } catch (Exception e) {
-            log.error(AppConstantes.ERROR_QUERY.concat(AppConstantes.ERROR_CONSULTAR));
-            logUtil.crearArchivoLog(Level.WARNING.toString(), this.getClass().getSimpleName(),
-                    this.getClass().getPackage().toString(),
-                    AppConstantes.ERROR_LOG_QUERY + AppConstantes.ERROR_CONSULTAR, AppConstantes.CONSULTA,
-                    authentication);
-            throw new IOException(AppConstantes.ERROR_CONSULTAR, e.getCause());
-        } finally {
+    
+    
+        
+        
+                
+                
+                
+        
+    
+    
 
-            if (connection != null) {
-                connection.close();
-            }
+    
 
-            if (statement != null) {
-                statement.close();
-            }
-            if (rs != null) {
-                rs.close();
-            }
-
-        }
-
-        return response;
-    }
-
-}
+    
