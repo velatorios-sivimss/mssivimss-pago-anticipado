@@ -472,7 +472,7 @@ public class PagoAnticipadoSFPAImpl implements PagoAnticipadoSFPAService {
 			connection = database.getConnection();
 			statement = connection.createStatement();
 			String consulta = pagosPlanSFPA.obtenerDetalleBitacoraPago();
-			log.info("consulta ", consulta);
+			
 			preparedStatement = connection.prepareStatement(consulta);
 			preparedStatement.setInt(1, idPagoParcialidad);
 			rs = preparedStatement.executeQuery();
