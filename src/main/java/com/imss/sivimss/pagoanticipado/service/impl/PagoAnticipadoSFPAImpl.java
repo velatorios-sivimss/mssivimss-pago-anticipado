@@ -7,6 +7,7 @@ import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+
 import com.imss.sivimss.pagoanticipado.beans.ActualizacionesPagosPlanSFPA;
 import com.imss.sivimss.pagoanticipado.beans.BusquedasPlanSFPA;
 import com.imss.sivimss.pagoanticipado.beans.InsercionesPagosSFPA;
@@ -26,6 +27,9 @@ import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
+import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.Statement;
 import java.text.ParseException;
 import java.util.*;
 
@@ -44,6 +48,16 @@ public class PagoAnticipadoSFPAImpl implements PagoAnticipadoSFPAService {
     private ProviderServiceRestTemplate providerRestTemplate;
     @Autowired
     ModelMapper modelMapper;
+    
+    @Autowired
+    private Database database;
+    
+	private ResultSet rs;
+	
+	private Connection connection; 
+	
+	private Statement statement;
+	
     @Autowired
     BusquedasPlanSFPA bean = new BusquedasPlanSFPA();
     @Autowired
@@ -54,6 +68,9 @@ public class PagoAnticipadoSFPAImpl implements PagoAnticipadoSFPAService {
     JsonParser jsonParser = new JsonParser();
     Gson json = new Gson();
 
+    @Autowired
+	private LogUtil logUtil; 
+    
     @Override
     public Response<?> buscarPlanSFPA(DatosRequest request, Authentication authentication) throws IOException {
         String datosJson = String.valueOf(request.getDatos().get(AppConstantes.DATOS));
@@ -406,4 +423,10 @@ public class PagoAnticipadoSFPAImpl implements PagoAnticipadoSFPAService {
         log.info(datosReporte.get("consultaOrdenes").toString());
         return datosReporte;
     }
+
+	@Override
+	public Response<?> bitacoraDetallePagos(DatosRequest request, Authentication authentication) throws IOException {
+		// TODO Auto-generated method stub
+		return null;
+	}
 }

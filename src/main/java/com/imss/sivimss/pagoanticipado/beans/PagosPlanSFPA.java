@@ -16,6 +16,8 @@ public class PagosPlanSFPA {
 
     private static final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(PagosPlanSFPA.class);
 
+    private String query;
+    
     public String detallePagosSFPA() {
         return "SELECT pg.ID_PAGO_SFPA AS idPagoSFPA, " +
                 " pg.noPagos, pg.ID_PLAN_SFPA AS idPlanSFPA, " +
@@ -134,6 +136,11 @@ public class PagosPlanSFPA {
         parametro.put(AppConstantes.QUERY, encoded);
         dr.setDatos(parametro);
         return dr;
+    }
+    
+    public String obtenerDetalleBitacoraPago() {
+    	
+    	return query;
     }
 
 }
