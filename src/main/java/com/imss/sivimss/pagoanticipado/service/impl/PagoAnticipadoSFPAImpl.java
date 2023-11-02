@@ -11,10 +11,12 @@ import com.google.gson.JsonParser;
 import com.imss.sivimss.pagoanticipado.beans.ActualizacionesPagosPlanSFPA;
 import com.imss.sivimss.pagoanticipado.beans.BusquedasPlanSFPA;
 import com.imss.sivimss.pagoanticipado.beans.InsercionesPagosSFPA;
+import com.imss.sivimss.pagoanticipado.beans.PagosPlanSFPA;
 import com.imss.sivimss.pagoanticipado.model.request.*;
 import com.imss.sivimss.pagoanticipado.model.response.DetalleGeneralPlanResponse;
 import com.imss.sivimss.pagoanticipado.model.response.DetallePagosResponse;
 import com.imss.sivimss.pagoanticipado.model.response.DetallePlanResponse;
+import com.imss.sivimss.pagoanticipado.model.response.PagosSFPAResponse;
 import com.imss.sivimss.pagoanticipado.model.response.ReciboPdfResponse;
 import com.imss.sivimss.pagoanticipado.service.PagoAnticipadoSFPAService;
 import com.imss.sivimss.pagoanticipado.util.*;
@@ -28,10 +30,19 @@ import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
+import java.sql.SQLException;
 import java.sql.Statement;
 import java.text.ParseException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.logging.Level;
 
 @Service
 public class PagoAnticipadoSFPAImpl implements PagoAnticipadoSFPAService {
@@ -48,29 +59,33 @@ public class PagoAnticipadoSFPAImpl implements PagoAnticipadoSFPAService {
     private ProviderServiceRestTemplate providerRestTemplate;
     @Autowired
     ModelMapper modelMapper;
-    
+
     @Autowired
     private Database database;
-    
-	private ResultSet rs;
-	
-	private Connection connection; 
-	
-	private Statement statement;
-	
+
+    private ResultSet rs;
+
+    private Connection connection;
+
+    private Statement statement;
+
+    private PreparedStatement preparedStatement;
+
     @Autowired
     BusquedasPlanSFPA bean = new BusquedasPlanSFPA();
     @Autowired
     InsercionesPagosSFPA beanInserta = new InsercionesPagosSFPA();
     @Autowired
     ActualizacionesPagosPlanSFPA beanActualiza = new ActualizacionesPagosPlanSFPA();
+    @Autowired
+    PagosPlanSFPA pagosPlanSFPA = new PagosPlanSFPA();
     private static final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(PagoAnticipadoSFPAImpl.class);
     JsonParser jsonParser = new JsonParser();
     Gson json = new Gson();
 
     @Autowired
-	private LogUtil logUtil; 
-    
+    private LogUtil logUtil;
+
     @Override
     public Response<?> buscarPlanSFPA(DatosRequest request, Authentication authentication) throws IOException {
         String datosJson = String.valueOf(request.getDatos().get(AppConstantes.DATOS));
@@ -161,47 +176,64 @@ public class PagoAnticipadoSFPAImpl implements PagoAnticipadoSFPAService {
     }
 
     @Override
-    public Response<?> verDetallePagos(DatosRequest request, Authentication authentication) throws IOException {
+    public Response<?> verDetallePagos(DatosRequest request, Authentication authentication)
+            throws SQLException, IOException {
         Response<?> response = new Response<>();
 
         ObjectMapper mapper = new ObjectMapper();
-        Integer idPlans = 0;
+        Integer idPlan = 0;
+
         try {
-            JsonNode datos = mapper
-                    .readTree(request.getDatos().get(AppConstantes.DATOS)
-                            .toString());
-            idPlans = datos.get("idPlan").asInt();
-            log.info("datosssasdasd     {}", idPlans);
-        } catch (JsonProcessingException e) {
-            e.printStackTrace();
+
+            JsonNode datos = mapper.readTree(request.getDatos().get(AppConstantes.DATOS)
+                    .toString());
+            idPlan = datos.get("idPlan").asInt();
+
+            connection = database.getConnection();
+            statement = connection.createStatement();
+            String consulta = pagosPlanSFPA.detallePagosSFPA();
+            log.info("datosssasdasd     {}", consulta);
+            preparedStatement = connection.prepareStatement(consulta);
+            preparedStatement.setInt(1, idPlan);
+            rs = preparedStatement.executeQuery();
+            ResultSetMetaData md = rs.getMetaData();
+            int columns = md.getColumnCount();
+            List<Object> list = new ArrayList<>();
+            if (rs.next()) {
+                while (rs.next()) {
+                    HashMap<String, Object> row = new HashMap<>();
+                    for (int i = 1; i <= columns; ++i) {
+                        row.put(md.getColumnName(i), rs.getObject(i));
+                    }
+                    list.add(row);
+                }
+                response = new Response<>(false, 200, AppConstantes.EXITO, list);
+                return response;
+            }
+
+        } catch (Exception e) {
+            log.error(AppConstantes.ERROR_QUERY.concat(AppConstantes.ERROR_CONSULTAR));
+            log.error(e.getMessage());
+            logUtil.crearArchivoLog(Level.WARNING.toString(), this.getClass().getSimpleName(),
+                    this.getClass().getPackage().toString(),
+                    AppConstantes.ERROR_LOG_QUERY + AppConstantes.ERROR_CONSULTAR, AppConstantes.CONSULTA,
+                    authentication);
+            throw new IOException(AppConstantes.ERROR_CONSULTAR, e.getCause());
+        } finally {
+
+            if (connection != null) {
+                connection.close();
+            }
+
+            if (statement != null) {
+                statement.close();
+            }
+            if (rs != null) {
+                rs.close();
+            }
+
         }
 
-        List<DetallePlanResponse> infoDetallePlan;
-        List<DetallePagosResponse> infoDetallePago;
-
-        /*
-         * Response<?> responseDetallePlan = providerRestTemplate
-         * .consumirServicio(bean.obtenerDetallePlan(idPlan).getDatos(), consultas +
-         * "/consulta", authentication);
-         * Response<?> responseDetallePago = providerRestTemplate
-         * .consumirServicio(bean.obtenerDetallePagos(idPlan).getDatos(), consultas +
-         * "/consulta", authentication);
-         * infoDetallePlan =
-         * Arrays.asList(modelMapper.map(responseDetallePlan.getDatos(),
-         * DetallePlanResponse[].class));
-         * infoDetallePago =
-         * Arrays.asList(modelMapper.map(responseDetallePago.getDatos(),
-         * DetallePagosResponse[].class));
-         * DetalleGeneralPlanResponse respuestaGeneral = new
-         * DetalleGeneralPlanResponse();
-         * respuestaGeneral.setDetallePlan(infoDetallePlan.get(0));
-         * respuestaGeneral.setPagos(infoDetallePago);
-         * response.setDatos(ConvertirGenerico.convertInstanceOfObject(respuestaGeneral)
-         * );
-         * response.setError(false);
-         * response.setCodigo(200);
-         * response.setMensaje("");
-         */
         return response;
     }
 
@@ -424,9 +456,9 @@ public class PagoAnticipadoSFPAImpl implements PagoAnticipadoSFPAService {
         return datosReporte;
     }
 
-	@Override
-	public Response<?> bitacoraDetallePagos(DatosRequest request, Authentication authentication) throws IOException {
-		// TODO Auto-generated method stub
-		return null;
-	}
+    @Override
+    public Response<?> bitacoraDetallePagos(DatosRequest request, Authentication authentication) throws IOException {
+        // TODO Auto-generated method stub
+        return null;
+    }
 }

@@ -17,34 +17,34 @@ public class PagosPlanSFPA {
     private static final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(PagosPlanSFPA.class);
 
     private String query;
-    
+
     public String detallePagosSFPA() {
-        return "SELECT pg.ID_PAGO_SFPA AS idPagoSFPA, " +
-                " pg.noPagos, pg.ID_PLAN_SFPA AS idPlanSFPA, " +
-                " pg.DES_VELATORIO AS velatorio,  " +
-                " DATE_FORMAT( pg.FEC_PARCIALIDAD,'%d/%m/%Y') AS fechaParcialidad, " +
-                " FORMAT(pg.IMP_MONTO_MENSUAL,2) AS importeMensual, " +
-                " pg.DES_ESTATUS_PAGO_ANTICIPADO AS estatusPago, " +
+        return "SELECT pg.idPagoSFPA, " +
+                " pg.noPagos, pg.idPlanSFPA, " +
+                " pg.velatorio,  " +
+                " DATE_FORMAT( pg.fechaParcialidad,'%d/%m/%Y') AS fechaParcialidad, " +
+                " pg.importeMensual, " +
+                " pg.estatusPago, " +
                 " pg.importePagado, " +
-                " CASE WHEN  PG.importePagado < pg.IMP_MONTO_MENSUAL THEN TRUE  " +
-                " WHEN  PG.importePagado = pg.IMP_MONTO_MENSUAL THEN FALSE " +
+                " CASE WHEN  pg.importePagado < pg.importeMensual THEN TRUE  " +
+                " WHEN  pg.importePagado = pg.importeMensual THEN FALSE " +
                 " ELSE FALSE " +
                 " END AS validaPago, " +
-                " case when pg.FEC_PARCIALIDAD = CURDATE() && pg.importeFaltante =0  then FORMAT(pg.IMP_MONTO_MENSUAL,2) "
+                " case when pg.fechaParcialidad = CURDATE() && pg.importeFaltante = 0  then  pg.importeMensual "
                 +
-                " when pg.FEC_PARCIALIDAD = CURDATE()   then FORMAT(pg.importeFaltante,2) " +
-                " ELSE FORMAT(pg.IMP_MONTO_MENSUAL,2) " +
+                " when pg.fechaParcialidad = CURDATE()   then pg.importeFaltante " +
+                " ELSE pg.importeMensual " +
                 " END AS importeAcumulado " +
                 " FROM ( " +
-                " SELECT ps.ID_PAGO_SFPA ,CONCAT(CAST((@row := @row + 1) AS VARCHAR(255)),'/', " +
+                " SELECT ps.ID_PAGO_SFPA as idPagoSFPA ,CONCAT(CAST((@row := @row + 1) AS VARCHAR(255)),'/', " +
                 " ( select COUNT(pf.ID_PAGO_SFPA) FROM SVT_PAGO_SFPA pf " +
                 " WHERE  pf.IND_ACTIVO = 1 " +
                 " AND pf.ID_PLAN_SFPA =ps.ID_PLAN_SFPA)) AS noPagos, " +
-                " ps.ID_PLAN_SFPA , " +
-                " v.DES_VELATORIO  , " +
-                " ps.FEC_PARCIALIDAD,  " +
-                " ps.IMP_MONTO_MENSUAL, " +
-                " ep.DES_ESTATUS_PAGO_ANTICIPADO  , " +
+                " ps.ID_PLAN_SFPA as idPlanSFPA, " +
+                " v.DES_VELATORIO  as velatorio, " +
+                " ps.FEC_PARCIALIDAD as  fechaParcialidad,  " +
+                " ps.IMP_MONTO_MENSUAL as importeMensual, " +
+                " ep.DES_ESTATUS_PAGO_ANTICIPADO   as estatusPago, " +
                 " (SELECT  ifnull(SUM(bpa.IMP_PAGO),0) FROM  svc_bitacora_pago_anticipado bpa " +
                 " WHERE bpa.ID_PAGO_SFPA= ps.ID_PAGO_SFPA ) as importePagado, " +
                 " ps.IND_ACTIVO, " +
@@ -60,7 +60,7 @@ public class PagosPlanSFPA {
                 " JOIN SVC_ESTATUS_PAGO_ANTICIPADO ep ON ep.ID_ESTATUS_PAGO_ANTICIPADO = ps.ID_ESTATUS_PAGO, " +
                 " (SELECT @row := 0) r " +
                 " ) AS pg " +
-                " WHERE pg.ID_PLAN_SFPA = 112 " +
+                " WHERE pg.idPlanSFPA = ? " +
                 " AND pg.IND_ACTIVO = 1 ";
 
     }
@@ -137,10 +137,10 @@ public class PagosPlanSFPA {
         dr.setDatos(parametro);
         return dr;
     }
-    
+
     public String obtenerDetalleBitacoraPago() {
-    	
-    	return query;
+
+        return query;
     }
 
 }
