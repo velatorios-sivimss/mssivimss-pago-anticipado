@@ -4,6 +4,8 @@ import com.imss.sivimss.pagoanticipado.model.request.ActualizaPagoRequest;
 import com.imss.sivimss.pagoanticipado.util.AppConstantes;
 import com.imss.sivimss.pagoanticipado.util.DatosRequest;
 import com.imss.sivimss.pagoanticipado.util.QueryHelper;
+import com.imss.sivimss.pagoanticipado.util.SelectQueryUtil;
+
 import org.springframework.stereotype.Service;
 
 import javax.xml.bind.DatatypeConverter;
@@ -139,7 +141,10 @@ public class PagosPlanSFPA {
     }
     
     public String obtenerDetalleBitacoraPago() {
-    	
+    	SelectQueryUtil selectQueryUtil = new SelectQueryUtil();
+    	selectQueryUtil.select(null)
+    	.from(null)
+    	.where(query);
     	return query;
     }
 
