@@ -143,9 +143,26 @@ public class PagosPlanSFPA {
     public String obtenerDetalleBitacoraPago() {
 
     	SelectQueryUtil selectQueryUtil = new SelectQueryUtil();
-    	selectQueryUtil.select(null)
-    	.from(null)
-    	.where(query);
+    	SelectQueryUtil selectQuery = new SelectQueryUtil();
+    	selectQueryUtil
+    	.select("SBPA.ID_BITACORA_PAGO" ,
+    			"SBPA .FEC_PAGO ",
+    			"SBPA .IMP_PAGO ",
+    			"SMP.DES_METODO_PAGO" ,
+    			"SBPA.NUM_AUTORIZACION",
+    			"SBPA.REF_FOLIO_AUTORIZACION",
+    			"SBPA.REF_BANCO",
+    			"CASE WHEN SBPA.IND_ACTIVO = 1 THEN 'PAGADO'"+
+    			"ELSE 'CANCELADO' END AS ESTATUS")
+    	.from("SVC_BITACORA_PAGO_ANTICIPADO SBPA ")
+    	.innerJoin("SVT_PAGO_SFPA SPS", "SBPA.ID_PAGO_SFPA = SPS.ID_PAGO_SFPA")
+    	.innerJoin("SVC_METODO_PAGO SMP", "SBPA.ID_METODO_PAGO = SMP.ID_METODO_PAGO")
+    	.innerJoin("SVC_ESTATUS_PAGO_ANTICIPADO SPA", "SPS.ID_ESTATUS_PAGO = SPA.ID_ESTATUS_PAGO_ANTICIPADO")
+    	.where("SPS.ID_PAGO_SFPA=? ORDER BY SBPA .FEC_PAGO");
+    	
+    	query=selectQuery.select("@I:= @I+1 AS NUM, TBL1.*")
+    	.from("("+selectQueryUtil.build()+") TBL1,(SELECT @I:=0) C").build();
+    	log.info(query);
     	return query;
 
     }

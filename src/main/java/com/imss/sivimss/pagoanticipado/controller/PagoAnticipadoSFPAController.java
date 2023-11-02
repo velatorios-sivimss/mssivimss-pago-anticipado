@@ -152,6 +152,18 @@ public class PagoAnticipadoSFPAController {
                                 .supplyAsync(() -> new ResponseEntity<>(response,
                                                 HttpStatus.valueOf(response.getCodigo())));
         }
+        
+        @CircuitBreaker(name = "msflujo", fallbackMethod = "fallbackGenerico")
+        @Retry(name = "msflujo", fallbackMethod = "fallbackGenerico")
+        @TimeLimiter(name = "msflujo")
+        @PostMapping("bitacora-metodos-pago")
+        public CompletableFuture<?> buscarBitacoraPagosPlanSFPA(@RequestBody DatosRequest request, Authentication authentication)
+                        throws IOException, SQLException {
+                Response<?> response = servicio.bitacoraDetallePagos(request, authentication);
+                return CompletableFuture
+                                .supplyAsync(() -> new ResponseEntity<>(response,
+                                                HttpStatus.valueOf(response.getCodigo())));
+        }
 
         /**
          * fallbacks generico

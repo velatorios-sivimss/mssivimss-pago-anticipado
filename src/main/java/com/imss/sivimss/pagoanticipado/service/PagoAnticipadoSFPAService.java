@@ -31,6 +31,6 @@ public interface PagoAnticipadoSFPAService {
     Response<?> descargarReportePA(DatosRequest request, Authentication authentication)
             throws IOException, ParseException;
 
-    Response<?> bitacoraDetallePagos(DatosRequest request, Authentication authentication) throws IOException;
+    Response<?> bitacoraDetallePagos(DatosRequest request, Authentication authentication) throws IOException, SQLException;
 
 }
