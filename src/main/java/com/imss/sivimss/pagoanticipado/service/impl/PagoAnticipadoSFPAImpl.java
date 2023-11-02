@@ -21,6 +21,7 @@ import com.imss.sivimss.pagoanticipado.model.response.ReciboPdfResponse;
 import com.imss.sivimss.pagoanticipado.service.PagoAnticipadoSFPAService;
 import com.imss.sivimss.pagoanticipado.util.*;
 
+import org.hibernate.service.spi.ServiceException;
 import org.json.JSONObject;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -176,13 +177,13 @@ public class PagoAnticipadoSFPAImpl implements PagoAnticipadoSFPAService {
     }
 
     @Override
-    public Response<?> verDetallePagos(DatosRequest request, Authentication authentication)
+    public Response<Object> verDetallePagos(DatosRequest request, Authentication authentication)
             throws SQLException, IOException {
-        Response<?> response = new Response<>();
+        Response<Object> response = new Response<>();
 
         ObjectMapper mapper = new ObjectMapper();
         Integer idPlan = 0;
-
+        List<Object> list = new ArrayList<>();
         try {
 
             JsonNode datos = mapper.readTree(request.getDatos().get(AppConstantes.DATOS)
@@ -192,13 +193,13 @@ public class PagoAnticipadoSFPAImpl implements PagoAnticipadoSFPAService {
             connection = database.getConnection();
             statement = connection.createStatement();
             String consulta = pagosPlanSFPA.detallePagosSFPA();
-            log.info("datosssasdasd     {}", consulta);
+            log.info("query  {}", consulta);
             preparedStatement = connection.prepareStatement(consulta);
             preparedStatement.setInt(1, idPlan);
             rs = preparedStatement.executeQuery();
             ResultSetMetaData md = rs.getMetaData();
             int columns = md.getColumnCount();
-            List<Object> list = new ArrayList<>();
+
             if (rs.next()) {
                 while (rs.next()) {
                     HashMap<String, Object> row = new HashMap<>();
@@ -212,13 +213,15 @@ public class PagoAnticipadoSFPAImpl implements PagoAnticipadoSFPAService {
             }
 
         } catch (Exception e) {
-            log.error(AppConstantes.ERROR_QUERY.concat(AppConstantes.ERROR_CONSULTAR));
+            log.error(AppConstantes.ERROR_QUERY);
             log.error(e.getMessage());
             logUtil.crearArchivoLog(Level.WARNING.toString(), this.getClass().getSimpleName(),
                     this.getClass().getPackage().toString(),
                     AppConstantes.ERROR_LOG_QUERY + AppConstantes.ERROR_CONSULTAR, AppConstantes.CONSULTA,
                     authentication);
-            throw new IOException(AppConstantes.ERROR_CONSULTAR, e.getCause());
+
+            return new Response<>(true, 500, AppConstantes.OCURRIO_ERROR_GENERICO, e.getMessage());
+
         } finally {
 
             if (connection != null) {
@@ -234,7 +237,8 @@ public class PagoAnticipadoSFPAImpl implements PagoAnticipadoSFPAService {
 
         }
 
-        return response;
+        return new Response<>(false, 200, AppConstantes.EXITO, list);
+
     }
 
     @Override
@@ -457,8 +461,59 @@ public class PagoAnticipadoSFPAImpl implements PagoAnticipadoSFPAService {
     }
 
     @Override
-    public Response<?> bitacoraDetallePagos(DatosRequest request, Authentication authentication) throws IOException {
-        // TODO Auto-generated method stub
-        return null;
+    public Response<?> bitacoraDetallePagos(DatosRequest request, Authentication authentication)
+            throws IOException, SQLException {
+        Response<?> response = new Response<>();
+        ObjectMapper mapper = new ObjectMapper();
+        Integer idPagoParcialidad = 0;
+        JsonNode datos = mapper.readTree(request.getDatos().get(AppConstantes.DATOS).toString());
+        idPagoParcialidad = datos.get("idPagoParcialidad").asInt();
+        try {
+            connection = database.getConnection();
+            statement = connection.createStatement();
+            String consulta = pagosPlanSFPA.obtenerDetalleBitacoraPago();
+
+            preparedStatement = connection.prepareStatement(consulta);
+            preparedStatement.setInt(1, idPagoParcialidad);
+            rs = preparedStatement.executeQuery();
+            ResultSetMetaData md = rs.getMetaData();
+            int columns = md.getColumnCount();
+            List<Object> list = new ArrayList<>();
+            if (rs.next()) {
+                while (rs.next()) {
+                    HashMap<String, Object> row = new HashMap<>();
+                    for (int i = 1; i <= columns; ++i) {
+                        row.put(md.getColumnName(i), rs.getObject(i));
+                    }
+                    list.add(row);
+                }
+                response = new Response<>(false, 200, AppConstantes.EXITO, list);
+                return response;
+            }
+
+        } catch (Exception e) {
+            log.error(AppConstantes.ERROR_QUERY.concat(AppConstantes.ERROR_CONSULTAR));
+            logUtil.crearArchivoLog(Level.WARNING.toString(), this.getClass().getSimpleName(),
+                    this.getClass().getPackage().toString(),
+                    AppConstantes.ERROR_LOG_QUERY + AppConstantes.ERROR_CONSULTAR, AppConstantes.CONSULTA,
+                    authentication);
+            throw new IOException(AppConstantes.ERROR_CONSULTAR, e.getCause());
+        } finally {
+
+            if (connection != null) {
+                connection.close();
+            }
+
+            if (statement != null) {
+                statement.close();
+            }
+            if (rs != null) {
+                rs.close();
+            }
+
+        }
+
+        return response;
     }
+
 }
