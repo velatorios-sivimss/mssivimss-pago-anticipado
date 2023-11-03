@@ -468,25 +468,32 @@ public class PagoAnticipadoSFPAImpl implements PagoAnticipadoSFPAService {
 		Integer idPagoParcialidad = 0;
 		JsonNode datos = mapper.readTree(request.getDatos().get(AppConstantes.DATOS).toString());
 		idPagoParcialidad = datos.get("idPagoParcialidad").asInt();
+		ResultSet rs2=null;
 		try {
 			connection = database.getConnection();
 			statement = connection.createStatement();
 			String consulta = pagosPlanSFPA.obtenerDetalleBitacoraPago();
 			
-			preparedStatement = connection.prepareStatement(consulta);
+			preparedStatement = connection.prepareStatement(consulta,ResultSet.TYPE_FORWARD_ONLY,
+                    ResultSet.CONCUR_READ_ONLY);
+			
 			preparedStatement.setInt(1, idPagoParcialidad);
+			rs2 = preparedStatement.executeQuery();
 			rs = preparedStatement.executeQuery();
-			ResultSetMetaData md = rs.getMetaData();
-			int columns = md.getColumnCount();
+			
 			List<Object> list = new ArrayList<>();
-			if (rs.next()) {
-				while (rs.next()) {
-					HashMap<String, Object> row = new HashMap<>();
-					for (int i = 1; i <= columns; ++i) {
-						row.put(md.getColumnName(i), rs.getObject(i));
-					}
-					list.add(row);
-				}
+			int rowCount = rs2.last() ? rs2.getRow() : 0;
+            ResultSetMetaData md = rs2.getMetaData();
+            int columns = md.getColumnCount();
+ 
+            if (rowCount > 0) {
+                while (rs.next()) {
+                    HashMap<String, Object> row = new HashMap<>();
+                    for (int i = 1; i <= columns; ++i) {
+                        row.put(md.getColumnName(i), rs.getObject(i));
+                    }
+                    list.add(row);
+                }
 				response = new Response<>(false, 200, AppConstantes.EXITO, list);
 				return response;
 			}
@@ -509,6 +516,9 @@ public class PagoAnticipadoSFPAImpl implements PagoAnticipadoSFPAService {
 			}
 			if (rs != null) {
 				rs.close();
+			}
+			if (rs2 != null) {
+				rs2.close();
 			}
 
 		}
