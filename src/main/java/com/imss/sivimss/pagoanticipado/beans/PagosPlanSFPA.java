@@ -145,22 +145,23 @@ public class PagosPlanSFPA {
     	SelectQueryUtil selectQueryUtil = new SelectQueryUtil();
     	SelectQueryUtil selectQuery = new SelectQueryUtil();
     	selectQueryUtil
-    	.select("SBPA.ID_BITACORA_PAGO" ,
-    			"SBPA .FEC_PAGO ",
-    			"SBPA .IMP_PAGO ",
-    			"SMP.DES_METODO_PAGO" ,
-    			"SBPA.NUM_AUTORIZACION",
-    			"SBPA.REF_FOLIO_AUTORIZACION",
-    			"SBPA.REF_BANCO",
-    			"CASE WHEN SBPA.IND_ACTIVO = 1 THEN 'PAGADO'"+
-    			"ELSE 'CANCELADO' END AS ESTATUS")
+    	.select("SBPA.ID_BITACORA_PAGO AS idBitacora" ,
+    			"SBPA .FEC_PAGO AS fechaPago",
+    			"SBPA .IMP_PAGO AS importePago",
+    			"SMP.DES_METODO_PAGO AS desMetodoPago" ,
+    			"SBPA.NUM_AUTORIZACION AS numeroAutorizacion",
+    			"SBPA.REF_FOLIO_AUTORIZACION AS folioAutorizacion",
+    			"SBPA.REF_BANCO AS referenciaBancaria",
+    			"SBPA.NUM_VALE_PARITARIO AS numeroValeParitario", "SBPA.FEC_VALE_PARITARIO AS fechaValeParitario", "SBPA.IMP_AUTORIZADO_VALE_PARITARIO AS importeValeParitario",
+    			"CASE WHEN SBPA.IND_ACTIVO = 1 THEN 'Pagado'"+
+    			"ELSE 'Cancelado' END AS estatus")
     	.from("SVC_BITACORA_PAGO_ANTICIPADO SBPA ")
     	.innerJoin("SVT_PAGO_SFPA SPS", "SBPA.ID_PAGO_SFPA = SPS.ID_PAGO_SFPA")
     	.innerJoin("SVC_METODO_PAGO SMP", "SBPA.ID_METODO_PAGO = SMP.ID_METODO_PAGO")
     	.innerJoin("SVC_ESTATUS_PAGO_ANTICIPADO SPA", "SPS.ID_ESTATUS_PAGO = SPA.ID_ESTATUS_PAGO_ANTICIPADO")
     	.where("SPS.ID_PAGO_SFPA=? ORDER BY SBPA .FEC_PAGO, SBPA.IND_ACTIVO");
     	
-    	query=selectQuery.select("FORMAT((@I:= @I+1),0) AS NUM, TBL1.*")
+    	query=selectQuery.select("FORMAT((@I:= @I+1),0) AS numeroPago, TBL1.*")
     	.from("("+selectQueryUtil.build()+") TBL1,(SELECT @I:=0) C").build();
     	log.info(query);
     	return query;
