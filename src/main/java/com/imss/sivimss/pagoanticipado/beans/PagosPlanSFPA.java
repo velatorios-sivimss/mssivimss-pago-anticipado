@@ -150,6 +150,7 @@ public class PagosPlanSFPA {
     	.select("SBPA.ID_BITACORA_PAGO AS idBitacora" ,
     			"SBPA .FEC_PAGO AS fechaPago",
     			"SBPA .IMP_PAGO AS importePago",
+    			"SBPA.ID_METODO_PAGO as idMetodoPago",
     			"SMP.DES_METODO_PAGO AS desMetodoPago" ,
     			"SBPA.NUM_AUTORIZACION AS numeroAutorizacion",
     			"SBPA.REF_FOLIO_AUTORIZACION AS folioAutorizacion",
