@@ -277,54 +277,63 @@ public class PagoAnticipadoSFPAImpl implements PagoAnticipadoSFPAService {
     }
 
     @Override
-    public Response<?> desactivarPago(DatosRequest request, Authentication authentication) throws IOException {
-        Response<?> respuestaFiinal = new Response();
-        JsonObject jsonObj = JsonParser.parseString((String) request.getDatos().get(AppConstantes.DATOS))
-                .getAsJsonObject();
-        String idPlanbitacora = jsonObj.get("idPlanBitacora").getAsString();
-        Response<?> respuesta = providerRestTemplate.consumirServicio(
-                beanActualiza.desactivarPago(idPlanbitacora).getDatos(), consultas + "/actualizar", authentication);
+    public Response<?> desactivarPago(DatosRequest request, Authentication authentication) throws IOException, SQLException {
+    	Response<?> response = new Response<>();
+		ObjectMapper mapper = new ObjectMapper();
+		Gson gson = new Gson();
+		UsuarioDto usuario = gson.fromJson((String) authentication.getPrincipal(), UsuarioDto.class);
+		Integer idPagoBitacora = 0;
+		JsonNode datos = mapper.readTree(request.getDatos().get(AppConstantes.DATOS).toString());
+		idPagoBitacora = datos.get("idPagoBitacora").asInt();
+		ResultSet rs2=null;
+		try {
+			connection = database.getConnection();
+			statement = connection.createStatement();
+			String consulta = pagosPlanSFPA.desactivarPagoBitacora();
+			
+			preparedStatement = connection.prepareStatement(consulta);
+			
+			preparedStatement.setInt(1, usuario.getIdUsuario());
+			preparedStatement.setInt(2, idPagoBitacora);
+	
+			int rows = preparedStatement.executeUpdate();
+			
+			
+            if (rows > 0) {
+                response = new Response<>(false, 200, AppConstantes.EXITO);
+				
+			}else {
+				 response = new Response<>(true, 500, AppConstantes.ERROR_GUARDAR);
+			}
+ 
 
-        if (respuesta.getMensaje().equals("Exito")) {
-            Response<?> respuestaImportes = providerRestTemplate.consumirServicio(
-                    bean.obtenerImporteCancelado(idPlanbitacora).getDatos(), consultas + "/consulta", authentication);
-            JsonArray jsonArray = (JsonArray) JsonParser.parseString(respuestaImportes.getDatos().toString());
-            JsonObject jsonObject = (JsonObject) JsonParser.parseString(jsonArray.get(0).toString());
-            Double importe = jsonObject.get("IMP_PAGO").getAsDouble();
-            Integer idPlanSFPA = jsonObject.get("ID_PLAN_SFPA").getAsInt();
-            Response<?> respuestaIdBP = providerRestTemplate.consumirServicio(
-                    bean.obtenerUltimoRegistroActivo(idPlanSFPA.toString()).getDatos(), consultas + "/consulta",
-                    authentication);
-            JsonArray responseIdBp = (JsonArray) JsonParser.parseString(respuestaIdBP.getDatos().toString());
-            JsonObject obj = (JsonObject) JsonParser.parseString(responseIdBp.get(0).toString());
-            Integer idPagobitacora = obj.get("idPagoBitacora").getAsInt();
-            Response<?> ultimoRestante = providerRestTemplate.consumirServicio(
-                    bean.obtenerUltimoRestante(idPlanSFPA.toString()).getDatos(), consultas + "/consulta",
-                    authentication);
-            JsonArray responseUR = (JsonArray) JsonParser.parseString(ultimoRestante.getDatos().toString());
-            JsonObject ur = (JsonObject) JsonParser.parseString(responseUR.get(0).toString());
-            Double restante = ur.get("restante").getAsDouble();
-            Double nuevoRestante = (importe + restante);
-            Response<?> respuestaNumPagos = providerRestTemplate.consumirServicio(
-                    bean.obtenernumeroPagos(idPlanSFPA.toString()).getDatos(), consultas + "/consulta", authentication);
-            JsonArray arrayNpagos = (JsonArray) JsonParser.parseString(respuestaNumPagos.getDatos().toString());
-            JsonObject objNpagos = (JsonObject) JsonParser.parseString(arrayNpagos.get(0).toString());
-            if (objNpagos.get("numPagos").getAsString().equals("0")) {
-                providerRestTemplate.consumirServicio(
-                        beanActualiza.actualizarEstatusGeneradoPlanSFPA(String.valueOf(idPlanSFPA)).getDatos(),
-                        consultas + "/actualizar", authentication);
-                providerRestTemplate.consumirServicio(beanActualiza
-                        .actualizarNuevoRestante(String.valueOf(idPagobitacora), nuevoRestante.toString()).getDatos(),
-                        consultas + "/actualizar", authentication);
-            }
-            return providerRestTemplate.consumirServicio(beanActualiza
-                    .actualizarNuevoRestante(String.valueOf(idPagobitacora), nuevoRestante.toString()).getDatos(),
-                    consultas + "/actualizar", authentication);
-        }
-        respuestaFiinal.setMensaje("");
-        respuestaFiinal.setError(true);
-        respuestaFiinal.setCodigo(500);
-        return respuestaFiinal;
+		} catch (Exception e) {
+			log.error(AppConstantes.ERROR_QUERY.concat(AppConstantes.ERROR_CONSULTAR));
+			logUtil.crearArchivoLog(Level.WARNING.toString(), this.getClass().getSimpleName(),
+					this.getClass().getPackage().toString(),
+					AppConstantes.ERROR_LOG_QUERY + AppConstantes.ERROR_CONSULTAR, AppConstantes.CONSULTA,
+					authentication);
+			throw new IOException(AppConstantes.ERROR_CONSULTAR, e.getCause());
+		} finally {
+
+			if (connection != null) {
+				connection.close();
+			}
+
+			if (statement != null) {
+				statement.close();
+			}
+			if (rs != null) {
+				rs.close();
+			}
+			if (rs2 != null) {
+				rs2.close();
+			}
+
+		}
+        
+		return response;
+
     }
 
     @Override

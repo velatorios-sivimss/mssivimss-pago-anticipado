@@ -161,13 +161,24 @@ public class PagosPlanSFPA {
     	.innerJoin("SVT_PAGO_SFPA SPS", "SBPA.ID_PAGO_SFPA = SPS.ID_PAGO_SFPA")
     	.innerJoin("SVC_METODO_PAGO SMP", "SBPA.ID_METODO_PAGO = SMP.ID_METODO_PAGO")
     	.innerJoin("SVC_ESTATUS_PAGO_ANTICIPADO SPA", "SPS.ID_ESTATUS_PAGO = SPA.ID_ESTATUS_PAGO_ANTICIPADO")
-    	.where("SPS.ID_PAGO_SFPA=? ORDER BY SBPA .FEC_PAGO, SBPA.IND_ACTIVO");
+    	.where("SPS.ID_PAGO_SFPA=? GROUP BY SBPA.ID_BITACORA_PAGO ORDER BY SBPA.FEC_PAGO, SBPA.IND_ACTIVO DESC");
     	
     	query=selectQuery.select("FORMAT((@I:= @I+1),0) AS numeroPago, TBL1.*")
     	.from("("+selectQueryUtil.build()+") TBL1,(SELECT @I:=0) C").build();
     	log.info(query);
     	return query;
 
+    }
+    
+    public String desactivarPagoBitacora(){
+        final QueryHelper q = new QueryHelper("UPDATE SVC_BITACORA_PAGO_ANTICIPADO");
+        q.agregarParametroValues("IND_ACTIVO","0");
+        q.addColumn("FEC_BAJA", "CURRENT_DATE()");
+        q.addColumn("ID_USUARIO_BAJA", "?");
+        q.addWhere("ID_BITACORA_PAGO = ?");
+        query = q.obtenerQueryActualizar();
+        log.info(query);
+        return query;
     }
 
 }

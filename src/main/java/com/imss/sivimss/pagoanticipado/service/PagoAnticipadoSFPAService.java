@@ -22,7 +22,7 @@ public interface PagoAnticipadoSFPAService {
 
         Response<?> actualizarPago(DatosRequest request, Authentication authentication) throws IOException;
 
-        Response<?> desactivarPago(DatosRequest request, Authentication authentication) throws IOException;
+        Response<?> desactivarPago(DatosRequest request, Authentication authentication) throws IOException, SQLException;
 
         Response<?> generarPDF(DatosRequest request, Authentication authentication) throws IOException;
 

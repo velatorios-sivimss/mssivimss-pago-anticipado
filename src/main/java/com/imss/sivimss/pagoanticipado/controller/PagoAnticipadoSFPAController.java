@@ -74,7 +74,7 @@ public class PagoAnticipadoSFPAController {
         @TimeLimiter(name = "msflujo")
         @PostMapping("desactivar-pago")
         public CompletableFuture<?> desactivarPago(@RequestBody DatosRequest request, Authentication authentication)
-                        throws IOException, ParseException {
+                        throws IOException, ParseException, SQLException {
                 Response<?> response = servicio.desactivarPago(request, authentication);
                 return CompletableFuture
                                 .supplyAsync(() -> new ResponseEntity<>(response,
