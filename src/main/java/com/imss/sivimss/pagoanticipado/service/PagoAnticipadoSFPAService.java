@@ -9,28 +9,30 @@ import java.sql.SQLException;
 import java.text.ParseException;
 
 public interface PagoAnticipadoSFPAService {
-    Response<?> buscarPlanSFPA(DatosRequest request, Authentication authentication) throws IOException;
+        Response<?> buscarPlanSFPA(DatosRequest request, Authentication authentication) throws IOException;
 
-    Response<?> buscarFolios(DatosRequest request, Authentication authentication) throws IOException;
+        Response<?> buscarFolios(DatosRequest request, Authentication authentication) throws IOException;
 
-    Response<?> metodosPago(DatosRequest request, Authentication authentication) throws IOException;
+        Response<?> metodosPago(DatosRequest request, Authentication authentication) throws IOException;
 
-    Response<?> generarPago(DatosRequest request, Authentication authentication) throws IOException;
+        Response<?> generarPago(DatosRequest request, Authentication authentication) throws IOException;
 
-    Response<?> verDetallePagos(DatosRequest request, Authentication authentication) throws IOException, SQLException;
+        Response<Object> verDetallePagos(DatosRequest request, Authentication authentication)
+                        throws IOException, SQLException;
 
-    Response<?> actualizarPago(DatosRequest request, Authentication authentication) throws IOException;
+        Response<?> actualizarPago(DatosRequest request, Authentication authentication) throws IOException;
 
-    Response<?> desactivarPago(DatosRequest request, Authentication authentication) throws IOException;
+        Response<?> desactivarPago(DatosRequest request, Authentication authentication) throws IOException;
 
-    Response<?> generarPDF(DatosRequest request, Authentication authentication) throws IOException;
+        Response<?> generarPDF(DatosRequest request, Authentication authentication) throws IOException;
 
-    Response<?> descargarDocumento(DatosRequest request, Authentication authentication)
-            throws IOException, ParseException;
+        Response<?> descargarDocumento(DatosRequest request, Authentication authentication)
+                        throws IOException, ParseException;
 
-    Response<?> descargarReportePA(DatosRequest request, Authentication authentication)
-            throws IOException, ParseException;
+        Response<?> descargarReportePA(DatosRequest request, Authentication authentication)
+                        throws IOException, ParseException;
 
-    Response<?> bitacoraDetallePagos(DatosRequest request, Authentication authentication) throws IOException, SQLException;
+        Response<?> bitacoraDetallePagos(DatosRequest request, Authentication authentication)
+                        throws IOException, SQLException;
 
 }

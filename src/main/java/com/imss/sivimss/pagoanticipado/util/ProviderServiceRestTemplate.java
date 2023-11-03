@@ -106,7 +106,7 @@ public class ProviderServiceRestTemplate {
 
 			}
 		}
-		Response<?> response;
+		Response<Object> response;
 		try {
 			response = isExceptionResponseMs == 1
 					? gson.fromJson(error.substring(2, error.length() - 1), Response.class)

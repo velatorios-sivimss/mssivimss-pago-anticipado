@@ -1,5 +1,33 @@
 package com.imss.sivimss.pagoanticipado.service.impl;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.gson.Gson;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
+
+import com.imss.sivimss.pagoanticipado.beans.ActualizacionesPagosPlanSFPA;
+import com.imss.sivimss.pagoanticipado.beans.BusquedasPlanSFPA;
+import com.imss.sivimss.pagoanticipado.beans.InsercionesPagosSFPA;
+import com.imss.sivimss.pagoanticipado.beans.PagosPlanSFPA;
+import com.imss.sivimss.pagoanticipado.model.request.*;
+import com.imss.sivimss.pagoanticipado.model.response.DetalleGeneralPlanResponse;
+import com.imss.sivimss.pagoanticipado.model.response.DetallePagosResponse;
+import com.imss.sivimss.pagoanticipado.model.response.DetallePlanResponse;
+import com.imss.sivimss.pagoanticipado.model.response.PagosSFPAResponse;
+import com.imss.sivimss.pagoanticipado.model.response.ReciboPdfResponse;
+import com.imss.sivimss.pagoanticipado.service.PagoAnticipadoSFPAService;
+import com.imss.sivimss.pagoanticipado.util.*;
+
+import org.json.JSONObject;
+import org.modelmapper.ModelMapper;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.core.Authentication;
+import org.springframework.stereotype.Service;
+
 import java.io.IOException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -41,13 +69,6 @@ import com.imss.sivimss.pagoanticipado.model.request.ReporteRequest;
 import com.imss.sivimss.pagoanticipado.model.request.UsuarioDto;
 import com.imss.sivimss.pagoanticipado.model.response.ReciboPdfResponse;
 import com.imss.sivimss.pagoanticipado.service.PagoAnticipadoSFPAService;
-import com.imss.sivimss.pagoanticipado.util.AppConstantes;
-import com.imss.sivimss.pagoanticipado.util.ConvertirImporteLetra;
-import com.imss.sivimss.pagoanticipado.util.Database;
-import com.imss.sivimss.pagoanticipado.util.DatosRequest;
-import com.imss.sivimss.pagoanticipado.util.LogUtil;
-import com.imss.sivimss.pagoanticipado.util.ProviderServiceRestTemplate;
-import com.imss.sivimss.pagoanticipado.util.Response;
 
 @Service
 public class PagoAnticipadoSFPAImpl implements PagoAnticipadoSFPAService {
@@ -181,13 +202,13 @@ public class PagoAnticipadoSFPAImpl implements PagoAnticipadoSFPAService {
     }
 
     @Override
-    public Response<?> verDetallePagos(DatosRequest request, Authentication authentication)
+    public Response<Object> verDetallePagos(DatosRequest request, Authentication authentication)
             throws SQLException, IOException {
-        Response<?> response = new Response<>();
+        Response<Object> response = new Response<>();
 
         ObjectMapper mapper = new ObjectMapper();
         Integer idPlan = 0;
-
+        List<Object> list = new ArrayList<>();
         try {
 
             JsonNode datos = mapper.readTree(request.getDatos().get(AppConstantes.DATOS)
@@ -197,13 +218,13 @@ public class PagoAnticipadoSFPAImpl implements PagoAnticipadoSFPAService {
             connection = database.getConnection();
             statement = connection.createStatement();
             String consulta = pagosPlanSFPA.detallePagosSFPA();
-            log.info("datosssasdasd     {}", consulta);
+            log.info("query  {}", consulta);
             preparedStatement = connection.prepareStatement(consulta);
             preparedStatement.setInt(1, idPlan);
             rs = preparedStatement.executeQuery();
             ResultSetMetaData md = rs.getMetaData();
             int columns = md.getColumnCount();
-            List<Object> list = new ArrayList<>();
+
             if (rs.next()) {
                 while (rs.next()) {
                     HashMap<String, Object> row = new HashMap<>();
@@ -217,13 +238,15 @@ public class PagoAnticipadoSFPAImpl implements PagoAnticipadoSFPAService {
             }
 
         } catch (Exception e) {
-            log.error(AppConstantes.ERROR_QUERY.concat(AppConstantes.ERROR_CONSULTAR));
+            log.error(AppConstantes.ERROR_QUERY);
             log.error(e.getMessage());
             logUtil.crearArchivoLog(Level.WARNING.toString(), this.getClass().getSimpleName(),
                     this.getClass().getPackage().toString(),
                     AppConstantes.ERROR_LOG_QUERY + AppConstantes.ERROR_CONSULTAR, AppConstantes.CONSULTA,
                     authentication);
-            throw new IOException(AppConstantes.ERROR_CONSULTAR, e.getCause());
+
+            return new Response<>(true, 500, AppConstantes.OCURRIO_ERROR_GENERICO, e.getMessage());
+
         } finally {
 
             if (connection != null) {
@@ -239,7 +262,8 @@ public class PagoAnticipadoSFPAImpl implements PagoAnticipadoSFPAService {
 
         }
 
-        return response;
+        return new Response<>(false, 200, AppConstantes.EXITO, list);
+
     }
 
     @Override
@@ -494,6 +518,7 @@ public class PagoAnticipadoSFPAImpl implements PagoAnticipadoSFPAService {
                     }
                     list.add(row);
                 }
+
 				response = new Response<>(false, 200, AppConstantes.EXITO, list);
 				return response;
 			}
@@ -522,7 +547,7 @@ public class PagoAnticipadoSFPAImpl implements PagoAnticipadoSFPAService {
 			}
 
 		}
-
+        
 		return response;
     }
 }
