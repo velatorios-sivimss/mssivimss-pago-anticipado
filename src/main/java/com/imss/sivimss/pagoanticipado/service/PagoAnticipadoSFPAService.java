@@ -15,14 +15,15 @@ public interface PagoAnticipadoSFPAService {
 
         Response<?> metodosPago(DatosRequest request, Authentication authentication) throws IOException;
 
-        Response<?> generarPago(DatosRequest request, Authentication authentication) throws IOException;
+        Response<?> generarPago(DatosRequest request, Authentication authentication) throws IOException, SQLException;
 
         Response<Object> verDetallePagos(DatosRequest request, Authentication authentication)
                         throws IOException, SQLException;
 
         Response<?> actualizarPago(DatosRequest request, Authentication authentication) throws IOException;
 
-        Response<?> desactivarPago(DatosRequest request, Authentication authentication) throws IOException, SQLException;
+        Response<?> desactivarPago(DatosRequest request, Authentication authentication)
+                        throws IOException, SQLException;
 
         Response<?> generarPDF(DatosRequest request, Authentication authentication) throws IOException;
 

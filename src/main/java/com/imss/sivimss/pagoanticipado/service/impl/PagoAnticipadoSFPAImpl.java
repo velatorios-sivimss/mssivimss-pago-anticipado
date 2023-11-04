@@ -1,6 +1,5 @@
 package com.imss.sivimss.pagoanticipado.service.impl;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.gson.Gson;
@@ -12,16 +11,10 @@ import com.imss.sivimss.pagoanticipado.beans.ActualizacionesPagosPlanSFPA;
 import com.imss.sivimss.pagoanticipado.beans.BusquedasPlanSFPA;
 import com.imss.sivimss.pagoanticipado.beans.InsercionesPagosSFPA;
 import com.imss.sivimss.pagoanticipado.beans.PagosPlanSFPA;
-import com.imss.sivimss.pagoanticipado.model.request.*;
-import com.imss.sivimss.pagoanticipado.model.response.DetalleGeneralPlanResponse;
-import com.imss.sivimss.pagoanticipado.model.response.DetallePagosResponse;
-import com.imss.sivimss.pagoanticipado.model.response.DetallePlanResponse;
-import com.imss.sivimss.pagoanticipado.model.response.PagosSFPAResponse;
 import com.imss.sivimss.pagoanticipado.model.response.ReciboPdfResponse;
 import com.imss.sivimss.pagoanticipado.service.PagoAnticipadoSFPAService;
 import com.imss.sivimss.pagoanticipado.util.*;
 
-import org.json.JSONObject;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -44,31 +37,12 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.logging.Level;
 
-import org.modelmapper.ModelMapper;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.security.core.Authentication;
-import org.springframework.stereotype.Service;
-
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.gson.Gson;
-import com.google.gson.JsonArray;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
-import com.imss.sivimss.pagoanticipado.beans.ActualizacionesPagosPlanSFPA;
-import com.imss.sivimss.pagoanticipado.beans.BusquedasPlanSFPA;
-import com.imss.sivimss.pagoanticipado.beans.InsercionesPagosSFPA;
-import com.imss.sivimss.pagoanticipado.beans.PagosPlanSFPA;
 import com.imss.sivimss.pagoanticipado.model.request.ActualizaPagoRequest;
 import com.imss.sivimss.pagoanticipado.model.request.BusquedaRequest;
 import com.imss.sivimss.pagoanticipado.model.request.ReciboPDFRequest;
-import com.imss.sivimss.pagoanticipado.model.request.RegistrarPagoRequest;
 import com.imss.sivimss.pagoanticipado.model.request.ReportePaDto;
 import com.imss.sivimss.pagoanticipado.model.request.ReporteRequest;
 import com.imss.sivimss.pagoanticipado.model.request.UsuarioDto;
-import com.imss.sivimss.pagoanticipado.model.response.ReciboPdfResponse;
-import com.imss.sivimss.pagoanticipado.service.PagoAnticipadoSFPAService;
 
 @Service
 public class PagoAnticipadoSFPAImpl implements PagoAnticipadoSFPAService {
@@ -143,89 +117,80 @@ public class PagoAnticipadoSFPAImpl implements PagoAnticipadoSFPAService {
     }
 
     @Override
-    public Response<?> generarPago(DatosRequest request, Authentication authentication) throws IOException {
+    public Response<Object> generarPago(DatosRequest request, Authentication authentication)
+            throws SQLException, IOException {
         UsuarioDto usuarioDto = json.fromJson((String) authentication.getPrincipal(), UsuarioDto.class);
-        String datosJson = String.valueOf(request.getDatos().get(AppConstantes.DATOS));
-        RegistrarPagoRequest pagoRequest = json.fromJson(datosJson, RegistrarPagoRequest.class);
-        Response<?> respuestaInfoPaquete = providerRestTemplate.consumirServicio(
-                bean.obtenerMontoPaquete(pagoRequest.getIdPlan()).getDatos(), consultas + "/consulta", authentication);
-        String montoTotal = "";
-        JsonArray objeto = (JsonArray) jsonParser.parse(respuestaInfoPaquete.getDatos().toString());
-        JsonObject obj = (JsonObject) jsonParser.parse(objeto.get(0).toString());
-        String mesesPagar = obj.get("mesesPagar").getAsString();
-        String desMeses = obj.get("desMeses").getAsString();
-        Boolean banderaPrimerPago = validaEsPrimerPago(authentication, pagoRequest.getIdPlan());
-        if (banderaPrimerPago) {
-            montoTotal = obj.get("importeTotal").getAsString();
-        } else {
-            montoTotal = obtenerMontoRestante(authentication, pagoRequest.getIdPlan());
-        }
-        Response<?> response = providerRestTemplate.consumirServicio(
-                beanInserta.insertarBitacoraPago(pagoRequest, montoTotal, obj.get("importeTotal").getAsString(),
-                        mesesPagar, desMeses, usuarioDto.getIdUsuario().toString()).getDatos(),
-                consultas + "/crearMultiple", authentication);
-        if (montoTotal.equals("0.0")) {
-            providerRestTemplate.consumirServicio(
-                    beanActualiza.actualizarEstatusPagadoPlanSFPA(pagoRequest.getIdPlan()).getDatos(),
-                    consultas + "/actualizar", authentication);
-            providerRestTemplate.consumirServicio(
-                    beanActualiza.actualizarEstatusCerradoPagoSFPA(pagoRequest.getIdPlan()).getDatos(),
-                    consultas + "/actualizar", authentication);
+        Integer idUsuario = usuarioDto.getIdUsuario();
+        ObjectMapper mapper = new ObjectMapper();
+        try {
+            JsonNode datos = mapper.readTree(request.getDatos().get(AppConstantes.DATOS)
+                    .toString());
+            Integer idPagoSFPA = datos.get("idPagoSFPA").asInt();
+            String fechaPago = datos.get("fechaPago").asText();
+            String numeroAutorizacion = datos.get("numeroAutorizacion").asText();
+            String folioAutorizacion = datos.get("folioAutorizacion").asText();
+            String nombreBanco = datos.get("nombreBanco").asText();
+            Double importe = datos.get("importe").doubleValue();
+            Integer idMetodoPago = datos.get("idMetodoPago").asInt();
+            log.info("id", idMetodoPago);
+
+        } catch (Exception e) {
+            log.error(AppConstantes.ERROR_QUERY);
+            log.error(e.getMessage());
+            logUtil.crearArchivoLog(Level.WARNING.toString(), this.getClass().getSimpleName(),
+                    this.getClass().getPackage().toString(),
+                    AppConstantes.ERROR_LOG_QUERY + AppConstantes.ERROR_CONSULTAR, AppConstantes.CONSULTA,
+                    authentication);
+
+            return new Response<>(true, 500, AppConstantes.OCURRIO_ERROR_GENERICO, e.getMessage());
+
+        } finally {
+
+            if (connection != null) {
+                connection.close();
+            }
+
+            if (rs != null) {
+                rs.close();
+            }
+
         }
 
-        if (response.getCodigo() == 200 && banderaPrimerPago) {
-            providerRestTemplate.consumirServicio(
-                    beanActualiza.actualizarEstatusVigentePlanSFPA(pagoRequest.getIdPlan()).getDatos(),
-                    consultas + "/actualizar", authentication);
-            providerRestTemplate.consumirServicio(
-                    beanActualiza.actualizarEstatusVigentePagoSFPA(pagoRequest.getIdPlan()).getDatos(),
-                    consultas + "/actualizar", authentication);
-        }
-        if (montoTotal.equals(pagoRequest.getImporte()) && response.getCodigo() == 200) {
-            providerRestTemplate.consumirServicio(
-                    beanActualiza.actualizarEstatusPagadoPlanSFPA(pagoRequest.getIdPlan()).getDatos(),
-                    consultas + "/actualizar", authentication);
-            providerRestTemplate.consumirServicio(
-                    beanActualiza.actualizarEstatusCerradoPagoSFPA(pagoRequest.getIdPlan()).getDatos(),
-                    consultas + "/actualizar", authentication);
-        }
-        if (Double.valueOf(pagoRequest.getImporte()) > Double.valueOf(montoTotal)) {
-            log.info("el importe es mayor");
-            providerRestTemplate.consumirServicio(
-                    beanActualiza.actualizarEstatusPagadoPlanSFPA(pagoRequest.getIdPlan()).getDatos(),
-                    consultas + "/actualizar", authentication);
-            providerRestTemplate.consumirServicio(
-                    beanActualiza.actualizarEstatusCerradoPagoSFPA(pagoRequest.getIdPlan()).getDatos(),
-                    consultas + "/actualizar", authentication);
-        }
-        return response;
+        return new Response<>(false, 200, AppConstantes.EXITO, null);
+
     }
 
     @Override
     public Response<Object> verDetallePagos(DatosRequest request, Authentication authentication)
             throws SQLException, IOException {
-        Response<Object> response = new Response<>();
-
         ObjectMapper mapper = new ObjectMapper();
         Integer idPlan = 0;
         List<Object> list = new ArrayList<>();
+        ResultSet rs2 = null;
+        HashMap<String, Object> salida = new HashMap<>();
         try {
 
             JsonNode datos = mapper.readTree(request.getDatos().get(AppConstantes.DATOS)
                     .toString());
             idPlan = datos.get("idPlan").asInt();
-
-            connection = database.getConnection();
-            statement = connection.createStatement();
             String consulta = pagosPlanSFPA.detallePagosSFPA();
+            connection = database.getConnection();
             log.info("query  {}", consulta);
-            preparedStatement = connection.prepareStatement(consulta);
+
+            Object datosGenerales = traeDatosGenerales(connection, idPlan);
+            salida.put("datosGenerales", datosGenerales);
+
+            preparedStatement = connection.prepareStatement(consulta, ResultSet.TYPE_FORWARD_ONLY,
+                    ResultSet.CONCUR_READ_ONLY);
             preparedStatement.setInt(1, idPlan);
+
+            rs2 = preparedStatement.executeQuery();
             rs = preparedStatement.executeQuery();
-            ResultSetMetaData md = rs.getMetaData();
+            int rowCount = rs2.last() ? rs2.getRow() : 0;
+            ResultSetMetaData md = rs2.getMetaData();
             int columns = md.getColumnCount();
 
-            if (rs.next()) {
+            if (rowCount > 0) {
                 while (rs.next()) {
                     HashMap<String, Object> row = new HashMap<>();
                     for (int i = 1; i <= columns; ++i) {
@@ -233,8 +198,9 @@ public class PagoAnticipadoSFPAImpl implements PagoAnticipadoSFPAService {
                     }
                     list.add(row);
                 }
-                response = new Response<>(false, 200, AppConstantes.EXITO, list);
-                return response;
+
+                salida.put("detallePago", list);
+
             }
 
         } catch (Exception e) {
@@ -253,16 +219,17 @@ public class PagoAnticipadoSFPAImpl implements PagoAnticipadoSFPAService {
                 connection.close();
             }
 
-            if (statement != null) {
-                statement.close();
-            }
             if (rs != null) {
                 rs.close();
             }
 
+            if (rs2 != null) {
+                rs2.close();
+            }
+
         }
 
-        return new Response<>(false, 200, AppConstantes.EXITO, list);
+        return new Response<>(false, 200, AppConstantes.EXITO, salida);
 
     }
 
@@ -277,62 +244,61 @@ public class PagoAnticipadoSFPAImpl implements PagoAnticipadoSFPAService {
     }
 
     @Override
-    public Response<?> desactivarPago(DatosRequest request, Authentication authentication) throws IOException, SQLException {
-    	Response<?> response = new Response<>();
-		ObjectMapper mapper = new ObjectMapper();
-		Gson gson = new Gson();
-		UsuarioDto usuario = gson.fromJson((String) authentication.getPrincipal(), UsuarioDto.class);
-		Integer idPagoBitacora = 0;
-		JsonNode datos = mapper.readTree(request.getDatos().get(AppConstantes.DATOS).toString());
-		idPagoBitacora = datos.get("idPagoBitacora").asInt();
-		ResultSet rs2=null;
-		try {
-			connection = database.getConnection();
-			statement = connection.createStatement();
-			String consulta = pagosPlanSFPA.desactivarPagoBitacora();
-			
-			preparedStatement = connection.prepareStatement(consulta);
-			
-			preparedStatement.setInt(1, usuario.getIdUsuario());
-			preparedStatement.setInt(2, idPagoBitacora);
-	
-			int rows = preparedStatement.executeUpdate();
-			
-			
+    public Response<?> desactivarPago(DatosRequest request, Authentication authentication)
+            throws IOException, SQLException {
+        Response<?> response = new Response<>();
+        ObjectMapper mapper = new ObjectMapper();
+        Gson gson = new Gson();
+        UsuarioDto usuario = gson.fromJson((String) authentication.getPrincipal(), UsuarioDto.class);
+        Integer idPagoBitacora = 0;
+        JsonNode datos = mapper.readTree(request.getDatos().get(AppConstantes.DATOS).toString());
+        idPagoBitacora = datos.get("idPagoBitacora").asInt();
+        ResultSet rs2 = null;
+        try {
+            connection = database.getConnection();
+            statement = connection.createStatement();
+            String consulta = pagosPlanSFPA.desactivarPagoBitacora();
+
+            preparedStatement = connection.prepareStatement(consulta);
+
+            preparedStatement.setInt(1, usuario.getIdUsuario());
+            preparedStatement.setInt(2, idPagoBitacora);
+
+            int rows = preparedStatement.executeUpdate();
+
             if (rows > 0) {
                 response = new Response<>(false, 200, AppConstantes.EXITO);
-				
-			}else {
-				 response = new Response<>(true, 500, AppConstantes.ERROR_GUARDAR);
-			}
- 
 
-		} catch (Exception e) {
-			log.error(AppConstantes.ERROR_QUERY.concat(AppConstantes.ERROR_CONSULTAR));
-			logUtil.crearArchivoLog(Level.WARNING.toString(), this.getClass().getSimpleName(),
-					this.getClass().getPackage().toString(),
-					AppConstantes.ERROR_LOG_QUERY + AppConstantes.ERROR_CONSULTAR, AppConstantes.CONSULTA,
-					authentication);
-			throw new IOException(AppConstantes.ERROR_CONSULTAR, e.getCause());
-		} finally {
+            } else {
+                response = new Response<>(true, 500, AppConstantes.ERROR_GUARDAR);
+            }
 
-			if (connection != null) {
-				connection.close();
-			}
+        } catch (Exception e) {
+            log.error(AppConstantes.ERROR_QUERY.concat(AppConstantes.ERROR_CONSULTAR));
+            logUtil.crearArchivoLog(Level.WARNING.toString(), this.getClass().getSimpleName(),
+                    this.getClass().getPackage().toString(),
+                    AppConstantes.ERROR_LOG_QUERY + AppConstantes.ERROR_CONSULTAR, AppConstantes.CONSULTA,
+                    authentication);
+            throw new IOException(AppConstantes.ERROR_CONSULTAR, e.getCause());
+        } finally {
 
-			if (statement != null) {
-				statement.close();
-			}
-			if (rs != null) {
-				rs.close();
-			}
-			if (rs2 != null) {
-				rs2.close();
-			}
+            if (connection != null) {
+                connection.close();
+            }
 
-		}
-        
-		return response;
+            if (statement != null) {
+                statement.close();
+            }
+            if (rs != null) {
+                rs.close();
+            }
+            if (rs2 != null) {
+                rs2.close();
+            }
+
+        }
+
+        return response;
 
     }
 
@@ -495,30 +461,31 @@ public class PagoAnticipadoSFPAImpl implements PagoAnticipadoSFPAService {
     }
 
     @Override
-    public Response<?> bitacoraDetallePagos(DatosRequest request, Authentication authentication) throws IOException, SQLException {
-		Response<?> response = new Response<>();
-		ObjectMapper mapper = new ObjectMapper();
-		Integer idPagoParcialidad = 0;
-		JsonNode datos = mapper.readTree(request.getDatos().get(AppConstantes.DATOS).toString());
-		idPagoParcialidad = datos.get("idPagoParcialidad").asInt();
-		ResultSet rs2=null;
-		try {
-			connection = database.getConnection();
-			statement = connection.createStatement();
-			String consulta = pagosPlanSFPA.obtenerDetalleBitacoraPago();
-			
-			preparedStatement = connection.prepareStatement(consulta,ResultSet.TYPE_FORWARD_ONLY,
+    public Response<?> bitacoraDetallePagos(DatosRequest request, Authentication authentication)
+            throws IOException, SQLException {
+        Response<?> response = new Response<>();
+        ObjectMapper mapper = new ObjectMapper();
+        Integer idPagoParcialidad = 0;
+        JsonNode datos = mapper.readTree(request.getDatos().get(AppConstantes.DATOS).toString());
+        idPagoParcialidad = datos.get("idPagoParcialidad").asInt();
+        ResultSet rs2 = null;
+        try {
+            connection = database.getConnection();
+            statement = connection.createStatement();
+            String consulta = pagosPlanSFPA.obtenerDetalleBitacoraPago();
+
+            preparedStatement = connection.prepareStatement(consulta, ResultSet.TYPE_FORWARD_ONLY,
                     ResultSet.CONCUR_READ_ONLY);
-			
-			preparedStatement.setInt(1, idPagoParcialidad);
-			rs2 = preparedStatement.executeQuery();
-			rs = preparedStatement.executeQuery();
-			
-			List<Object> list = new ArrayList<>();
-			int rowCount = rs2.last() ? rs2.getRow() : 0;
+
+            preparedStatement.setInt(1, idPagoParcialidad);
+            rs2 = preparedStatement.executeQuery();
+            rs = preparedStatement.executeQuery();
+
+            List<Object> list = new ArrayList<>();
+            int rowCount = rs2.last() ? rs2.getRow() : 0;
             ResultSetMetaData md = rs2.getMetaData();
             int columns = md.getColumnCount();
- 
+
             if (rowCount > 0) {
                 while (rs.next()) {
                     HashMap<String, Object> row = new HashMap<>();
@@ -528,35 +495,75 @@ public class PagoAnticipadoSFPAImpl implements PagoAnticipadoSFPAService {
                     list.add(row);
                 }
 
-				response = new Response<>(false, 200, AppConstantes.EXITO, list);
-				return response;
-			}
+                response = new Response<>(false, 200, AppConstantes.EXITO, list);
+                return response;
+            }
 
-		} catch (Exception e) {
-			log.error(AppConstantes.ERROR_QUERY.concat(AppConstantes.ERROR_CONSULTAR));
-			logUtil.crearArchivoLog(Level.WARNING.toString(), this.getClass().getSimpleName(),
-					this.getClass().getPackage().toString(),
-					AppConstantes.ERROR_LOG_QUERY + AppConstantes.ERROR_CONSULTAR, AppConstantes.CONSULTA,
-					authentication);
-			throw new IOException(AppConstantes.ERROR_CONSULTAR, e.getCause());
-		} finally {
+        } catch (Exception e) {
+            log.error(AppConstantes.ERROR_QUERY.concat(AppConstantes.ERROR_CONSULTAR));
+            logUtil.crearArchivoLog(Level.WARNING.toString(), this.getClass().getSimpleName(),
+                    this.getClass().getPackage().toString(),
+                    AppConstantes.ERROR_LOG_QUERY + AppConstantes.ERROR_CONSULTAR, AppConstantes.CONSULTA,
+                    authentication);
+            throw new IOException(AppConstantes.ERROR_CONSULTAR, e.getCause());
+        } finally {
 
-			if (connection != null) {
-				connection.close();
-			}
+            if (connection != null) {
+                connection.close();
+            }
 
-			if (statement != null) {
-				statement.close();
-			}
-			if (rs != null) {
-				rs.close();
-			}
-			if (rs2 != null) {
-				rs2.close();
-			}
+            if (statement != null) {
+                statement.close();
+            }
+            if (rs != null) {
+                rs.close();
+            }
+            if (rs2 != null) {
+                rs2.close();
+            }
 
-		}
-        
-		return response;
+        }
+
+        return response;
     }
+
+    private Object traeDatosGenerales(Connection connection,
+            Integer idPlan) throws SQLException {
+        HashMap<String, Object> salida = new HashMap<>();
+        ResultSet rs2 = null;
+        try {
+
+            String consultaDatosGenerales = pagosPlanSFPA.detallePlan();
+            log.info("query {}", consultaDatosGenerales);
+            preparedStatement = connection.prepareStatement(consultaDatosGenerales);
+            preparedStatement.setInt(1, idPlan);
+            rs2 = preparedStatement.executeQuery();
+            rs = preparedStatement.executeQuery();
+            ResultSetMetaData md = rs2.getMetaData();
+            int columns = md.getColumnCount();
+            int rowCount = rs2.last() ? rs2.getRow() : 0;
+            if (rowCount > 0) {
+                while (rs.next()) {
+                    for (int i = 1; i <= columns; ++i) {
+                        salida.put(md.getColumnName(i), rs.getObject(i));
+                    }
+                }
+            }
+
+        } catch (Exception e) {
+            log.error(AppConstantes.ERROR_QUERY);
+            log.error(e.getMessage());
+            if (connection != null)
+                connection.close();
+            if (rs2 != null)
+                rs.close();
+            if (rs != null)
+                rs.close();
+
+            return salida;
+        }
+        return salida;
+
+    }
+
 }
