@@ -108,7 +108,7 @@ public class PagosPlanSFPA {
                 " concat(ifnull(pr.NOM_PERSONA,''),' ',IFNULL(pr.NOM_PRIMER_APELLIDO,''),' ',IFNULL(pr.NOM_SEGUNDO_APELLIDO,'')) AS nombre,"
                 +
                 "IFNULL( ps.IMP_PRECIO,0) AS precio," +
-                "(ifnull(ps.IMP_PRECIO,0) - ifnull(SUM(bp.IMP_PAGO),0)) AS costoRestante")
+                "(ifnull(ps.IMP_PRECIO,0) - ifnull(SUM(bp.IMP_PAGO),0)) AS costoRestante, ifnull(pr.REF_CORREO,'') as correo")
                 .from("SVT_PLAN_SFPA ps ")
                 .innerJoin("SVC_VELATORIO v", "v.ID_VELATORIO = ps.ID_VELATORIO")
                 .innerJoin("SVC_DELEGACION   d", "d.ID_DELEGACION = v.ID_DELEGACION")
