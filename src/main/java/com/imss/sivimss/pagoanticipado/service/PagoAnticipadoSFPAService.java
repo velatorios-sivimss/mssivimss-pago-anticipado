@@ -15,7 +15,8 @@ public interface PagoAnticipadoSFPAService {
 
         Response<?> metodosPago(DatosRequest request, Authentication authentication) throws IOException;
 
-        Response<?> generarPago(DatosRequest request, Authentication authentication) throws IOException, SQLException;
+        Response<Object> generarPago(DatosRequest request, Authentication authentication)
+                        throws SQLException, IOException;
 
         Response<Object> verDetallePagos(DatosRequest request, Authentication authentication)
                         throws IOException, SQLException;

@@ -22,6 +22,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -125,15 +126,82 @@ public class PagoAnticipadoSFPAImpl implements PagoAnticipadoSFPAService {
         try {
             JsonNode datos = mapper.readTree(request.getDatos().get(AppConstantes.DATOS)
                     .toString());
+            Integer idPlan = datos.get("idPlan").asInt();
             Integer idPagoSFPA = datos.get("idPagoSFPA").asInt();
             String fechaPago = datos.get("fechaPago").asText();
             String numeroAutorizacion = datos.get("numeroAutorizacion").asText();
             String folioAutorizacion = datos.get("folioAutorizacion").asText();
             String nombreBanco = datos.get("nombreBanco").asText();
-            Double importe = datos.get("importe").doubleValue();
+            BigDecimal importe = new BigDecimal(datos.get("importe").asDouble());
             Integer idMetodoPago = datos.get("idMetodoPago").asInt();
-            log.info("id", idMetodoPago);
+            log.info("request {}", datos);
 
+            String insertarPagoBitagoraSFPA = pagosPlanSFPA.insertarPagoBitagoraSFPA();
+            connection = database.getConnection();
+            log.info("Insertar bitacora  {}", insertarPagoBitagoraSFPA);
+
+            connection = database.getConnection();
+            connection.setAutoCommit(false);
+
+            preparedStatement = connection.prepareStatement(insertarPagoBitagoraSFPA, Statement.RETURN_GENERATED_KEYS);
+            preparedStatement.setInt(1, idPagoSFPA);
+            preparedStatement.setInt(2, 1);
+            preparedStatement.setString(3, fechaPago);
+            preparedStatement.setString(4, numeroAutorizacion);
+            preparedStatement.setString(5, folioAutorizacion);
+            preparedStatement.setString(6, nombreBanco);
+            preparedStatement.setBigDecimal(7, importe);
+            preparedStatement.setInt(8, idMetodoPago);
+            preparedStatement.setInt(9, idUsuario);
+
+            int affectedRows = preparedStatement.executeUpdate();
+            if (affectedRows == 0) {
+                throw new SQLException("No se pudo guardar");
+            }
+            Integer idBitacora = 0;
+            rs = preparedStatement.getGeneratedKeys();
+            if (rs.next()) {
+                idBitacora = rs.getInt(1);
+            }
+            log.info("id bitacora", idBitacora);
+            Double costoRestante = validaCosto(connection, idPlan, idPagoSFPA);
+            Integer estatusPagoSFPA = 8;// 8 estatus por pagar
+
+            if (costoRestante == 0)
+                estatusPagoSFPA = 5;// 5 pagado
+            if (costoRestante == -1.0)
+                return new Response<>(false, 500, AppConstantes.ERROR_QUERY, null);
+
+            String actualizaEstatusPagoSFPA = pagosPlanSFPA.actualizaEstatusPagoSFPA();
+            log.info("actualizar estatus pago  {}", actualizaEstatusPagoSFPA);
+            preparedStatement = connection.prepareStatement(actualizaEstatusPagoSFPA);
+            preparedStatement.setInt(1, estatusPagoSFPA);
+            preparedStatement.setInt(2, idUsuario);
+            preparedStatement.setInt(3, idPagoSFPA);
+            preparedStatement.setInt(4, idPlan);
+            Integer actualizaEsatus1 = preparedStatement.executeUpdate();
+            if (actualizaEsatus1 < 1)
+                throw new SQLException("No se pudo guardar");
+
+            Double total = validaTotalPagado(connection, idPlan);
+            Integer estatusPlan = 2;// esatus plan 2 vigente
+            if (total == 0.0)
+                estatusPlan = 4;// esatus plan 4 pagado
+
+            String actualizaEstatusPlan = pagosPlanSFPA.actualizaEstatusPlan();
+            log.info("actualizar estatus plan  {}", actualizaEstatusPlan);
+            preparedStatement = connection.prepareStatement(actualizaEstatusPlan);
+            preparedStatement.setInt(1, estatusPlan);
+            preparedStatement.setInt(2, idUsuario);
+            preparedStatement.setInt(3, idPlan);
+
+            Integer actualizaEsatus2 = preparedStatement.executeUpdate();
+            if (actualizaEsatus2 < 1)
+                throw new SQLException("No se pudo actualizar");
+
+            connection.commit();
+
+            return new Response<>(true, 200, AppConstantes.EXITO, null);
         } catch (Exception e) {
             log.error(AppConstantes.ERROR_QUERY);
             log.error(e.getMessage());
@@ -155,8 +223,6 @@ public class PagoAnticipadoSFPAImpl implements PagoAnticipadoSFPAService {
             }
 
         }
-
-        return new Response<>(false, 200, AppConstantes.EXITO, null);
 
     }
 
@@ -563,6 +629,90 @@ public class PagoAnticipadoSFPAImpl implements PagoAnticipadoSFPAService {
             return salida;
         }
         return salida;
+
+    }
+
+    private Double validaCosto(Connection connection,
+            Integer idPlan, Integer idPagoSFPA) throws SQLException {
+
+        ResultSet rs2 = null;
+        Double deuda = 0.0;
+        Double pagada = 0.0;
+        Double mensualidad = 0.0;
+        try {
+
+            String validaMontoPagoSFPA = pagosPlanSFPA.validaMontoPagoSFPA();
+            log.info("query {}", validaMontoPagoSFPA);
+            preparedStatement = connection.prepareStatement(validaMontoPagoSFPA);
+            preparedStatement.setInt(1, idPlan);
+            preparedStatement.setInt(2, idPlan);
+            preparedStatement.setInt(3, idPlan);
+            preparedStatement.setInt(4, idPagoSFPA);
+            rs2 = preparedStatement.executeQuery();
+            rs = preparedStatement.executeQuery();
+
+            int rowCount = rs2.last() ? rs2.getRow() : 0;
+            if (rowCount > 0) {
+                Integer contador = 0;
+                while (rs.next()) {
+
+                    if (contador == 0)
+                        deuda = (Double) rs.getObject(1);
+                    if (contador == 1)
+                        pagada = (Double) rs.getObject(2);
+                    if (contador == 2)
+                        mensualidad = (Double) rs.getObject(3);
+                    contador++;
+
+                }
+                return (deuda - pagada) + mensualidad;
+            }
+
+        } catch (Exception e) {
+            log.error(AppConstantes.ERROR_QUERY);
+            log.error(e.getMessage());
+            if (connection != null)
+                connection.close();
+            if (rs2 != null)
+                rs.close();
+            if (rs != null)
+                rs.close();
+
+            return -1.0;
+        }
+        return 0.0;
+
+    }
+
+    private Double validaTotalPagado(Connection connection,
+            Integer idPlan) throws SQLException {
+
+        Double total = 0.0;
+
+        try {
+
+            String consultaTotales = pagosPlanSFPA.totalPagado();
+            log.info("consulta cantidad restante {}", consultaTotales);
+            preparedStatement = connection.prepareStatement(consultaTotales);
+            preparedStatement.setInt(1, idPlan);
+            rs = preparedStatement.executeQuery();
+            rs.first();
+            total = rs.getDouble(1);
+
+            return total;
+
+        } catch (Exception e) {
+            log.error(AppConstantes.ERROR_QUERY);
+            log.error(e.getMessage());
+            if (connection != null)
+                connection.close();
+
+            if (rs != null)
+                rs.close();
+
+            return 0.0;
+
+        }
 
     }
 

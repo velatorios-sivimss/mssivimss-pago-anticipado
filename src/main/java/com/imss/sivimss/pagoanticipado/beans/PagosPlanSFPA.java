@@ -125,7 +125,7 @@ public class PagosPlanSFPA {
         return query;
     }
 
-    public String insertarPagoBitagora() {
+    public String insertarPagoBitagoraSFPA() {
 
         return "INSERT INTO SVC_BITACORA_PAGO_ANTICIPADO"
                 + "( ID_BITACORA_PAGO ,   " +
@@ -140,7 +140,56 @@ public class PagosPlanSFPA {
                 "  IND_ACTIVO ,   " +
                 "  ID_USUARIO_ALTA ,   " +
                 "  FEC_ALTA )"
-                + "VALUES (NULL,?,?,?,?,?,?,?,1,?,CURDATE())";
+                + "VALUES (NULL,?,?,?,?,?,?,?,?,1,?,CURDATE())";
+    }
+
+    public String validaMontoPagoSFPA() {
+        return "SELECT CAST(IFNULL(SUM(sps.IMP_MONTO_MENSUAL),0) AS DOUBLE) AS deuda , " +
+                " 0.0 AS pagado, " +
+                " 0.0 AS mensualidad " +
+                " FROM SVT_PAGO_SFPA sps " +
+                " WHERE sps.ID_ESTATUS_PAGO = 2  " +
+                " AND sps.IND_ACTIVO = 1 " +
+                " AND sps.FEC_PARCIALIDAD <= CURDATE() AND sps.ID_PLAN_SFPA = ? " +
+                " UNION   " +
+                " SELECT 0.0, " +
+                " CAST(IFNULL(SUM(bpaa.IMP_PAGO),0) AS DOUBLE), " +
+                " 0.0 " +
+                " FROM SVT_PAGO_SFPA sps " +
+                " JOIN SVC_BITACORA_PAGO_ANTICIPADO bpaa ON bpaa.ID_PAGO_SFPA= sps.ID_PAGO_SFPA " +
+                " WHERE sps.IND_ACTIVO = 1 " +
+                " AND sps.ID_PLAN_SFPA = ? " +
+                " union " +
+                " SELECT 0.0,0.0,  " +
+                " CAST(sps.IMP_MONTO_MENSUAL AS DOUBLE)  " +
+                " FROM SVT_PAGO_SFPA sps " +
+                " WHERE sps.IND_ACTIVO = 1  " +
+                " AND sps.ID_PLAN_SFPA = ? " +
+                " AND sps.ID_PAGO_SFPA = ?";
+    }
+
+    public String actualizaEstatusPagoSFPA() {
+        return " UPDATE SVT_PAGO_SFPA SET ID_ESTATUS_PAGO = ?," +
+                " ID_USUARIO_MODIFICA = ?," +
+                " FEC_ACTUALIZACION = CURDATE() " +
+                " WHERE ID_PAGO_SFPA =?" +
+                " AND ID_PLAN_SFPA = ?";
+    }
+
+    public String totalPagado() {
+        return "SELECT ifnull(SUM(pa.IMP_PAGO),0)- IFNULL( psf.IMP_PRECIO,0) AS total" +
+                "  FROM SVC_BITACORA_PAGO_ANTICIPADO pa" +
+                " JOIN SVT_PAGO_SFPA ps ON ps.ID_PAGO_SFPA = pa.ID_PAGO_SFPA" +
+                " JOIN SVT_PLAN_SFPA psf ON psf.ID_PLAN_SFPA = ps.ID_PLAN_SFPA" +
+                " WHERE ps.ID_PLAN_SFPA = ?" +
+                " AND pa.IND_ACTIVO= 1";
+    }
+
+    public String actualizaEstatusPlan() {
+        return " UPDATE SVT_PLAN_SFPA SET ID_ESTATUS_PLAN_SFPA=?," +
+                " ID_USUARIO_MODIFICA= ?," +
+                " FEC_ACTUALIZACION=  CURDATE()" +
+                "  WHERE ID_PLAN_SFPA = ?";
     }
 
 }

@@ -98,7 +98,7 @@ public class PagoAnticipadoSFPAController {
         @TimeLimiter(name = "msflujo")
         @PostMapping("registrar-pago")
         public CompletableFuture<?> registrarPago(@RequestBody DatosRequest request, Authentication authentication)
-                        throws IOException, ParseException {
+                        throws IOException, ParseException, SQLException {
                 Response<?> response = servicio.generarPago(request, authentication);
                 return CompletableFuture
                                 .supplyAsync(() -> new ResponseEntity<>(response,
@@ -152,12 +152,13 @@ public class PagoAnticipadoSFPAController {
                                 .supplyAsync(() -> new ResponseEntity<>(response,
                                                 HttpStatus.valueOf(response.getCodigo())));
         }
-        
+
         @CircuitBreaker(name = "msflujo", fallbackMethod = "fallbackGenerico")
         @Retry(name = "msflujo", fallbackMethod = "fallbackGenerico")
         @TimeLimiter(name = "msflujo")
         @PostMapping("bitacora-metodos-pago")
-        public CompletableFuture<?> buscarBitacoraPagosPlanSFPA(@RequestBody DatosRequest request, Authentication authentication)
+        public CompletableFuture<?> buscarBitacoraPagosPlanSFPA(@RequestBody DatosRequest request,
+                        Authentication authentication)
                         throws IOException, SQLException {
                 Response<?> response = servicio.bitacoraDetallePagos(request, authentication);
                 return CompletableFuture
