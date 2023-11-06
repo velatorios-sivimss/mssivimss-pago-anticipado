@@ -6,10 +6,7 @@ import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
-
-import com.imss.sivimss.pagoanticipado.beans.ActualizacionesPagosPlanSFPA;
 import com.imss.sivimss.pagoanticipado.beans.BusquedasPlanSFPA;
-import com.imss.sivimss.pagoanticipado.beans.InsercionesPagosSFPA;
 import com.imss.sivimss.pagoanticipado.beans.PagosPlanSFPA;
 import com.imss.sivimss.pagoanticipado.model.response.ReciboPdfResponse;
 import com.imss.sivimss.pagoanticipado.service.PagoAnticipadoSFPAService;
@@ -73,10 +70,7 @@ public class PagoAnticipadoSFPAImpl implements PagoAnticipadoSFPAService {
 
     @Autowired
     BusquedasPlanSFPA bean = new BusquedasPlanSFPA();
-    @Autowired
-    InsercionesPagosSFPA beanInserta = new InsercionesPagosSFPA();
-    @Autowired
-    ActualizacionesPagosPlanSFPA beanActualiza = new ActualizacionesPagosPlanSFPA();
+
     @Autowired
     PagosPlanSFPA pagosPlanSFPA = new PagosPlanSFPA();
     private static final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(PagoAnticipadoSFPAImpl.class);
