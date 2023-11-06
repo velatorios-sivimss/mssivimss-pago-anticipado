@@ -192,4 +192,18 @@ public class PagosPlanSFPA {
                 "  WHERE ID_PLAN_SFPA = ?";
     }
 
+    public String actualizarPagoBitagoraSFPA() {
+        return " UPDATE  SVC_BITACORA_PAGO_ANTICIPADO SET" +
+                " FEC_PAGO = ?," +
+                " NUM_AUTORIZACION = ?," +
+                " REF_FOLIO_AUTORIZACION = ?, " +
+                " REF_BANCO = ?, " +
+                " IMP_PAGO = ?, " +
+                " ID_METODO_PAGO = ?, " +
+                " FEC_ACTUALIZACION = CURDATE() , " +
+                " ID_USUARIO_MODIFICA = ? " +
+                " WHERE  ID_BITACORA_PAGO = ?" +
+                " AND  ID_PAGO_SFPA = ?";
+    }
+
 }

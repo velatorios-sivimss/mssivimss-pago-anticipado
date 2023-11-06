@@ -62,7 +62,7 @@ public class PagoAnticipadoSFPAController {
         @TimeLimiter(name = "msflujo")
         @PostMapping("modificar-pago")
         public CompletableFuture<?> modificarPago(@RequestBody DatosRequest request, Authentication authentication)
-                        throws IOException, ParseException {
+                        throws IOException, ParseException, SQLException {
                 Response<?> response = servicio.actualizarPago(request, authentication);
                 return CompletableFuture
                                 .supplyAsync(() -> new ResponseEntity<>(response,

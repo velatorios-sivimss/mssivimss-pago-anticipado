@@ -38,7 +38,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.logging.Level;
 
-import com.imss.sivimss.pagoanticipado.model.request.ActualizaPagoRequest;
 import com.imss.sivimss.pagoanticipado.model.request.BusquedaRequest;
 import com.imss.sivimss.pagoanticipado.model.request.ReciboPDFRequest;
 import com.imss.sivimss.pagoanticipado.model.request.ReportePaDto;
@@ -128,10 +127,10 @@ public class PagoAnticipadoSFPAImpl implements PagoAnticipadoSFPAService {
                     .toString());
             Integer idPlan = datos.get("idPlan").asInt();
             Integer idPagoSFPA = datos.get("idPagoSFPA").asInt();
-            String fechaPago = datos.get("fechaPago").asText();
-            String numeroAutorizacion = datos.get("numeroAutorizacion").asText();
-            String folioAutorizacion = datos.get("folioAutorizacion").asText();
-            String nombreBanco = datos.get("nombreBanco").asText();
+            String fechaPago = setValor(datos.get("fechaPago").asText());
+            String numeroAutorizacion = setValor(datos.get("numeroAutorizacion").asText());
+            String folioAutorizacion = setValor(datos.get("folioAutorizacion").asText());
+            String nombreBanco = setValor(datos.get("nombreBanco").asText());
             BigDecimal importe = new BigDecimal(datos.get("importe").asDouble());
             Integer idMetodoPago = datos.get("idMetodoPago").asInt();
             log.info("request {}", datos);
@@ -300,12 +299,104 @@ public class PagoAnticipadoSFPAImpl implements PagoAnticipadoSFPAService {
     }
 
     @Override
-    public Response<?> actualizarPago(DatosRequest request, Authentication authentication) throws IOException {
-        String datosJson = String.valueOf(request.getDatos().get(AppConstantes.DATOS));
-        ActualizaPagoRequest actualiza = json.fromJson(datosJson, ActualizaPagoRequest.class);
-        log.info(actualiza.getIdPago().toString());
-        return providerRestTemplate.consumirServicio(beanActualiza.actualizarMetodoPago(actualiza).getDatos(),
-                consultas + "/actualizar", authentication);
+    public Response<Object> actualizarPago(DatosRequest request, Authentication authentication)
+            throws IOException, SQLException {
+        UsuarioDto usuarioDto = json.fromJson((String) authentication.getPrincipal(), UsuarioDto.class);
+        Integer idUsuario = usuarioDto.getIdUsuario();
+        ObjectMapper mapper = new ObjectMapper();
+
+        try {
+            JsonNode datos = mapper.readTree(request.getDatos().get(AppConstantes.DATOS)
+                    .toString());
+            Integer idPlan = datos.get("idPlan").asInt();
+            Integer idBitacoraPago = datos.get("idBitacoraPago").asInt();
+            Integer idPagoSFPA = datos.get("idPagoSFPA").asInt();
+            String fechaPago = setValor(datos.get("fechaPago").asText());
+            String numeroAutorizacion = setValor(datos.get("numeroAutorizacion").asText());
+            String folioAutorizacion = setValor(datos.get("folioAutorizacion").asText());
+            String nombreBanco = setValor(datos.get("nombreBanco").asText());
+            BigDecimal importe = new BigDecimal(datos.get("importe").asDouble());
+            Integer idMetodoPago = datos.get("idMetodoPago").asInt();
+            log.info("request {}", datos);
+            String actualizarPagoBitagoraSFPA = pagosPlanSFPA.actualizarPagoBitagoraSFPA();
+            connection = database.getConnection();
+            log.info("Actualizar  bitacora  {}", actualizarPagoBitagoraSFPA);
+
+            connection = database.getConnection();
+            connection.setAutoCommit(false);
+            preparedStatement = connection.prepareStatement(actualizarPagoBitagoraSFPA);
+            preparedStatement.setString(1, fechaPago);
+            preparedStatement.setString(2, numeroAutorizacion);
+            preparedStatement.setString(3, folioAutorizacion);
+            preparedStatement.setString(4, nombreBanco);
+            preparedStatement.setBigDecimal(5, importe);
+            preparedStatement.setInt(6, idMetodoPago);
+            preparedStatement.setInt(7, idUsuario);
+            preparedStatement.setInt(8, idBitacoraPago);
+            preparedStatement.setInt(9, idPagoSFPA);
+
+            preparedStatement.executeUpdate();
+
+            Double costoRestante = validaCosto(connection, idPlan, idPagoSFPA);
+            Integer estatusPagoSFPA = 8;// 8 estatus por pagar
+
+            if (costoRestante == 0)
+                estatusPagoSFPA = 5;// 5 pagado
+            if (costoRestante == -1.0)
+                return new Response<>(false, 500, AppConstantes.ERROR_QUERY, null);
+
+            String actualizaEstatusPagoSFPA = pagosPlanSFPA.actualizaEstatusPagoSFPA();
+            log.info("actualizar estatus pago  {}", actualizaEstatusPagoSFPA);
+            preparedStatement = connection.prepareStatement(actualizaEstatusPagoSFPA);
+            preparedStatement.setInt(1, estatusPagoSFPA);
+            preparedStatement.setInt(2, idUsuario);
+            preparedStatement.setInt(3, idPagoSFPA);
+            preparedStatement.setInt(4, idPlan);
+            Integer actualizaEsatus1 = preparedStatement.executeUpdate();
+            if (actualizaEsatus1 < 1)
+                throw new SQLException("No se pudo guardar");
+
+            Double total = validaTotalPagado(connection, idPlan);
+            Integer estatusPlan = 2;// esatus plan 2 vigente
+            if (total == 0.0)
+                estatusPlan = 4;// esatus plan 4 pagado
+
+            String actualizaEstatusPlan = pagosPlanSFPA.actualizaEstatusPlan();
+            log.info("actualizar estatus plan  {}", actualizaEstatusPlan);
+            preparedStatement = connection.prepareStatement(actualizaEstatusPlan);
+            preparedStatement.setInt(1, estatusPlan);
+            preparedStatement.setInt(2, idUsuario);
+            preparedStatement.setInt(3, idPlan);
+
+            Integer actualizaEsatus2 = preparedStatement.executeUpdate();
+            if (actualizaEsatus2 < 1)
+                throw new SQLException("No se pudo actualizar");
+
+            connection.commit();
+
+            return new Response<>(true, 200, AppConstantes.EXITO, null);
+
+        } catch (Exception e) {
+            log.error(AppConstantes.ERROR_QUERY);
+            log.error(e.getMessage());
+            logUtil.crearArchivoLog(Level.WARNING.toString(), this.getClass().getSimpleName(),
+                    this.getClass().getPackage().toString(),
+                    AppConstantes.ERROR_LOG_QUERY + AppConstantes.ERROR_CONSULTAR, AppConstantes.CONSULTA,
+                    authentication);
+
+            return new Response<>(true, 500, AppConstantes.OCURRIO_ERROR_GENERICO, e.getMessage());
+
+        } finally {
+
+            if (connection != null) {
+                connection.close();
+            }
+
+            if (rs != null) {
+                rs.close();
+            }
+
+        }
 
     }
 
@@ -714,6 +805,14 @@ public class PagoAnticipadoSFPAImpl implements PagoAnticipadoSFPAService {
 
         }
 
+    }
+
+    private String setValor(String valor) {
+        if (valor == null || valor.equals("") || valor.toUpperCase().equals("NULL")) {
+            return null;
+        } else {
+            return valor;
+        }
     }
 
 }
