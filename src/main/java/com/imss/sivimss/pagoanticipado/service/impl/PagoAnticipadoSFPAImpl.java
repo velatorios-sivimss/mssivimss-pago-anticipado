@@ -127,6 +127,9 @@ public class PagoAnticipadoSFPAImpl implements PagoAnticipadoSFPAService {
             String nombreBanco = setValor(datos.get("nombreBanco").asText());
             BigDecimal importe = new BigDecimal(datos.get("importe").asDouble());
             Integer idMetodoPago = datos.get("idMetodoPago").asInt();
+            String valeParitaria = setValor(datos.get("valeParitaria").asText());
+            String fechaValeParitaria = setValor(datos.get("fechaValeParitaria").asText());
+            BigDecimal importeValeParitaria = new BigDecimal(datos.get("importeValeParitaria").asDouble());
             log.info("request {}", datos);
 
             String insertarPagoBitagoraSFPA = pagosPlanSFPA.insertarPagoBitagoraSFPA();
@@ -146,6 +149,9 @@ public class PagoAnticipadoSFPAImpl implements PagoAnticipadoSFPAService {
             preparedStatement.setBigDecimal(7, importe);
             preparedStatement.setInt(8, idMetodoPago);
             preparedStatement.setInt(9, idUsuario);
+            preparedStatement.setString(10, valeParitaria);
+            preparedStatement.setString(11, fechaValeParitaria);
+            preparedStatement.setBigDecimal(12, importeValeParitaria);
 
             int affectedRows = preparedStatement.executeUpdate();
             if (affectedRows == 0) {
@@ -194,7 +200,7 @@ public class PagoAnticipadoSFPAImpl implements PagoAnticipadoSFPAService {
 
             connection.commit();
 
-            return new Response<>(true, 200, AppConstantes.EXITO, null);
+            return new Response<>(false, 200, AppConstantes.EXITO, null);
         } catch (Exception e) {
             log.error(AppConstantes.ERROR_QUERY);
             log.error(e.getMessage());
@@ -203,7 +209,7 @@ public class PagoAnticipadoSFPAImpl implements PagoAnticipadoSFPAService {
                     AppConstantes.ERROR_LOG_QUERY + AppConstantes.ERROR_CONSULTAR, AppConstantes.CONSULTA,
                     authentication);
 
-            return new Response<>(true, 500, AppConstantes.OCURRIO_ERROR_GENERICO, e.getMessage());
+            return new Response<>(true, 200, AppConstantes.OCURRIO_ERROR_GENERICO, e.getMessage());
 
         } finally {
 
@@ -270,7 +276,7 @@ public class PagoAnticipadoSFPAImpl implements PagoAnticipadoSFPAService {
                     AppConstantes.ERROR_LOG_QUERY + AppConstantes.ERROR_CONSULTAR, AppConstantes.CONSULTA,
                     authentication);
 
-            return new Response<>(true, 500, AppConstantes.OCURRIO_ERROR_GENERICO, e.getMessage());
+            return new Response<>(true, 200, AppConstantes.OCURRIO_ERROR_GENERICO, e.getMessage());
 
         } finally {
 
