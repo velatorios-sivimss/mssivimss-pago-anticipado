@@ -12,7 +12,7 @@ public class PagosPlanSFPA {
     private String query;
 
     public String detallePagosSFPA() {
-        return "SELECT pg.idPagoSFPA, CONCAT(CAST((@ROW := @ROW + 1) AS VARCHAR(255)),'/', (\r\n" + //
+        return "SELECT pg.idPagoSFPA,pg.idEstatus, CONCAT(CAST((@ROW := @ROW + 1) AS VARCHAR(255)),'/', (\r\n" + //
                 "SELECT COUNT(pf.ID_PAGO_SFPA)\r\n" + //
                 "FROM SVT_PAGO_SFPA pf\r\n" + //
                 "WHERE pf.IND_ACTIVO = 1 AND pf.ID_PLAN_SFPA = pg.idPlanSFPA)) AS noPagos, \r\n" + //
@@ -22,7 +22,7 @@ public class PagosPlanSFPA {
                 "WHEN pg.importePagado = pg.importeMensual THEN FALSE\r\n" + //
                 " ELSE FALSE END AS validaPago, \r\n" + //
                 "pg.importePagado , pg.importeMensual ,\r\n" + //
-                " pg.fechaParcialidad , CURDATE() ,\r\n" + //
+                " pg.fechaParcialidad , " + //
                 "CASE WHEN pg.idEstatus = 2 THEN 0 WHEN MONTH(pg.fechaParcialidad) = MONTH(CURDATE()) \r\n" + //
                 "THEN (pg.importeFaltante + pg.importeMensual) - pg.importePagadoBitacora\r\n" + //
                 " ELSE pg.importeMensual END AS importeAcumulado\r\n" + //
@@ -59,6 +59,7 @@ public class PagosPlanSFPA {
         SelectQueryUtil selectQuery = new SelectQueryUtil();
         selectQueryUtil
                 .select("SBPA.ID_BITACORA_PAGO AS idBitacora",
+                        "SBPA.IND_ACTIVO  AS idEstatus",
                         "SBPA .FEC_PAGO AS fechaPago",
                         "SBPA .IMP_PAGO AS importePago",
                         "SBPA.ID_METODO_PAGO as idMetodoPago",
@@ -75,10 +76,11 @@ public class PagosPlanSFPA {
                 .innerJoin("SVT_PAGO_SFPA SPS", "SBPA.ID_PAGO_SFPA = SPS.ID_PAGO_SFPA")
                 .innerJoin("SVC_METODO_PAGO SMP", "SBPA.ID_METODO_PAGO = SMP.ID_METODO_PAGO")
                 .innerJoin("SVC_ESTATUS_PAGO_ANTICIPADO SPA", "SPS.ID_ESTATUS_PAGO = SPA.ID_ESTATUS_PAGO_ANTICIPADO")
-                .where("SPS.ID_PAGO_SFPA=? GROUP BY SBPA.ID_BITACORA_PAGO ORDER BY SBPA.FEC_PAGO, SBPA.IND_ACTIVO DESC");
+                .where("SPS.ID_PAGO_SFPA=? GROUP BY SBPA.ID_BITACORA_PAGO ORDER BY SBPA.ID_BITACORA_PAGO, SBPA.FEC_PAGO, SBPA.IND_ACTIVO ");
 
         query = selectQuery.select("FORMAT((@I:= @I+1),0) AS numeroPago, TBL1.*")
-                .from("(" + selectQueryUtil.build() + ") TBL1,(SELECT @I:=0) C").build();
+                .from("(" + selectQueryUtil.build() + ") TBL1,(SELECT @I:=0) C ")
+                .build();
         log.info(query);
         return query;
 
@@ -201,7 +203,10 @@ public class PagosPlanSFPA {
                 " IMP_PAGO = ?, " +
                 " ID_METODO_PAGO = ?, " +
                 " FEC_ACTUALIZACION = CURDATE() , " +
-                " ID_USUARIO_MODIFICA = ? " +
+                " ID_USUARIO_MODIFICA = ? ," +
+                " NUM_VALE_PARITARIO = ? ," +
+                " FEC_VALE_PARITARIO = ? ," +
+                " IMP_AUTORIZADO_VALE_PARITARIO = ? " +
                 " WHERE  ID_BITACORA_PAGO = ?" +
                 " AND  ID_PAGO_SFPA = ?";
     }

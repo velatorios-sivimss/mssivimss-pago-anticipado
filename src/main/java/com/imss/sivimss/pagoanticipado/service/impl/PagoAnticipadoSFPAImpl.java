@@ -317,11 +317,14 @@ public class PagoAnticipadoSFPAImpl implements PagoAnticipadoSFPAService {
             String nombreBanco = setValor(datos.get("nombreBanco").asText());
             BigDecimal importe = new BigDecimal(datos.get("importe").asDouble());
             Integer idMetodoPago = datos.get("idMetodoPago").asInt();
+            String valeParitaria = setValor(datos.get("valeParitaria").asText());
+            String fechaValeParitaria = setValor(datos.get("fechaValeParitaria").asText());
+            BigDecimal importeValeParitaria = new BigDecimal(datos.get("importeValeParitaria").asDouble());
             log.info("request {}", datos);
             String actualizarPagoBitagoraSFPA = pagosPlanSFPA.actualizarPagoBitagoraSFPA();
             connection = database.getConnection();
             log.info("Actualizar  bitacora  {}", actualizarPagoBitagoraSFPA);
-
+            System.out.println("sadasdasd" + importeValeParitaria);
             connection = database.getConnection();
             connection.setAutoCommit(false);
             preparedStatement = connection.prepareStatement(actualizarPagoBitagoraSFPA);
@@ -332,8 +335,11 @@ public class PagoAnticipadoSFPAImpl implements PagoAnticipadoSFPAService {
             preparedStatement.setBigDecimal(5, importe);
             preparedStatement.setInt(6, idMetodoPago);
             preparedStatement.setInt(7, idUsuario);
-            preparedStatement.setInt(8, idBitacoraPago);
-            preparedStatement.setInt(9, idPagoSFPA);
+            preparedStatement.setString(8, valeParitaria);
+            preparedStatement.setString(9, fechaValeParitaria);
+            preparedStatement.setBigDecimal(10, importeValeParitaria);
+            preparedStatement.setInt(11, idBitacoraPago);
+            preparedStatement.setInt(12, idPagoSFPA);
 
             preparedStatement.executeUpdate();
 
@@ -374,7 +380,7 @@ public class PagoAnticipadoSFPAImpl implements PagoAnticipadoSFPAService {
 
             connection.commit();
 
-            return new Response<>(true, 200, AppConstantes.EXITO, null);
+            return new Response<>(false, 200, AppConstantes.EXITO, null);
 
         } catch (Exception e) {
             log.error(AppConstantes.ERROR_QUERY);
@@ -384,7 +390,7 @@ public class PagoAnticipadoSFPAImpl implements PagoAnticipadoSFPAService {
                     AppConstantes.ERROR_LOG_QUERY + AppConstantes.ERROR_CONSULTAR, AppConstantes.CONSULTA,
                     authentication);
 
-            return new Response<>(true, 500, AppConstantes.OCURRIO_ERROR_GENERICO, e.getMessage());
+            return new Response<>(true, 200, AppConstantes.OCURRIO_ERROR_GENERICO, e.getMessage());
 
         } finally {
 
