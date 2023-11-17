@@ -100,7 +100,7 @@ public class PagoAnticipadoSFPAImpl implements PagoAnticipadoSFPAService {
             providerRestTemplate.consumirServicio(beanActualiza.actualizarEstatusVigentePlanSFPA(pagoRequest.getIdPlan()).getDatos(), consultas + "/actualizar", authentication);
             providerRestTemplate.consumirServicio(beanActualiza.actualizarEstatusVigentePagoSFPA(pagoRequest.getIdPlan()).getDatos(), consultas + "/actualizar", authentication);
         }
-        if(montoTotal.equals(pagoRequest.getImporte()) && response.getCodigo() == 200){
+        if(montoTotal.equals(Double.valueOf(pagoRequest.getImporte()).toString()) && response.getCodigo() == 200){
             providerRestTemplate.consumirServicio(beanActualiza.actualizarEstatusPagadoPlanSFPA(pagoRequest.getIdPlan()).getDatos(), consultas + "/actualizar", authentication);
             providerRestTemplate.consumirServicio(beanActualiza.actualizarEstatusCerradoPagoSFPA(pagoRequest.getIdPlan()).getDatos(), consultas + "/actualizar", authentication);
         }
