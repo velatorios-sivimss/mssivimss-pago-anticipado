@@ -62,6 +62,8 @@ public class PagosPlanSFPA {
         SelectQueryUtil selectQuery = new SelectQueryUtil();
         selectQueryUtil
                 .select("SBPA.ID_BITACORA_PAGO AS idBitacora",
+                		"SPS.ID_PLAN_SFPA AS idPlan",
+                		"SBPA.ID_PAGO_SFPA AS idPagoParcialidad",
                         "SBPA.IND_ACTIVO  AS idEstatus",
                         "SBPA .FEC_PAGO AS fechaPago",
                         "SBPA .IMP_PAGO AS importePago",
@@ -99,6 +101,8 @@ public class PagosPlanSFPA {
         log.info(query);
         return query;
     }
+    
+    
 
     public String detallePlan() {
         SelectQueryUtil selectQuery = new SelectQueryUtil();
