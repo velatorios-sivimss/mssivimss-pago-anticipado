@@ -737,6 +737,7 @@ public class PagoAnticipadoSFPAImpl implements PagoAnticipadoSFPAService {
         Double deudaMensualActual = 0.0;
         Double deudasPasadas = 0.0;
         Double pagosRealizados = 0.0;
+        Double mensualidad=0.0.;
         try {
 
             String validaMontoPagoSFPA = pagosPlanSFPA.validaMontoPagoSFPA();
@@ -756,21 +757,27 @@ public class PagoAnticipadoSFPAImpl implements PagoAnticipadoSFPAService {
 
                     if (contador == 0)
                         deudaMensualActual = (Double) rs.getObject(1);
-                    if (contador == 1)
+                          
+                    if (contador == 1){
                         deudasPasadas = (Double) rs.getObject(2);
+                        mensualidad= (Double) rs.getObject(3);
+                    }
+                      
                     if (contador == 2)
                         pagosRealizados = (Double) rs.getObject(3);
                     contador++;
 
                 }
 
+                
+
                 if (deudaMensualActual == 0.0 && (deudasPasadas - pagosRealizados) == 0.0) {
                     return 0.0;
                 } else if (deudaMensualActual > 0) {
-                    if ((deudasPasadas - pagosRealizados) > 0) {
+                    if ((deudaMensualActual-mensualidad)>mensualidad && (deudasPasadas - pagosRealizados) > 0) {
                         return (deudasPasadas - pagosRealizados);
                     }
-                    return deudaMensualActual;
+                    return  0.0;
                 }
                 return deudaMensualActual;
 
