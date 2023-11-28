@@ -12,46 +12,46 @@ public class PagosPlanSFPA {
     private String query;
 
     public String detallePagosSFPA() {
-        return "SELECT pg.idPagoSFPA,pg.idEstatus, CONCAT(CAST((@ROW := @ROW + 1) AS VARCHAR(255)),'/', (\r\n" + //
-                "SELECT COUNT(pf.ID_PAGO_SFPA)\r\n" + //
-                "FROM SVT_PAGO_SFPA pf\r\n" + //
-                "WHERE pf.IND_ACTIVO = 1 AND pf.ID_PLAN_SFPA = pg.idPlanSFPA)) AS noPagos, \r\n" + //
-                "pg.idPlanSFPA, pg.velatorio, DATE_FORMAT(pg.fechaParcialidad,'%d/%m/%Y') AS fechaParcialidad, \r\n" + //
-                "pg.importeMensual, pg.estatusPago, pg.importePagado, \r\n" + //
-                "CASE WHEN pg.importePagado < pg.importeMensual && pg.fechaParcialidad = CURDATE() THEN TRUE \r\n" + //
-                "WHEN pg.importePagado = pg.importeMensual THEN FALSE\r\n" + //
-                " ELSE FALSE END AS validaPago, \r\n" + //
-                "pg.importePagado , pg.importeMensual ,\r\n" + //
-                " pg.fechaParcialidad , " + //
-                "CASE WHEN pg.idEstatus = 2 THEN 0 WHEN MONTH(pg.fechaParcialidad) = MONTH(CURDATE()) && ((pg.importeFaltante + pg.importeMensual) - pg.importePagadoBitacora) > 0 \r\n"
-                + //
-                "THEN (pg.importeFaltante + pg.importeMensual) - pg.importePagadoBitacora\r\n" + //
+        return "SELECT pg.idPagoSFPA,pg.idEstatus, CONCAT(CAST((@ROW := @ROW + 1) AS VARCHAR(255)),'/', ( " +
+                "SELECT COUNT(pf.ID_PAGO_SFPA) " +
+                "FROM SVT_PAGO_SFPA pf " +
+                "WHERE pf.IND_ACTIVO = 1 AND pf.ID_PLAN_SFPA = pg.idPlanSFPA)) AS noPagos,  " +
+                "pg.idPlanSFPA, pg.velatorio, DATE_FORMAT(pg.fechaParcialidad,'%d/%m/%Y') AS fechaParcialidad,  " +
+                "pg.importeMensual, pg.estatusPago, pg.importePagado,  " +
+                "CASE WHEN pg.importePagado < pg.importeMensual && pg.fechaParcialidad = CURDATE() THEN TRUE  " +
+                "WHEN pg.importePagado = pg.importeMensual THEN FALSE " +
+                " ELSE FALSE END AS validaPago,  " +
+                "pg.importePagado , pg.importeMensual , " +
+                " pg.fechaParcialidad , " +
+                "CASE WHEN pg.idEstatus = 2 THEN 0 WHEN MONTH(pg.fechaParcialidad) = MONTH(CURDATE()) && ((pg.importeFaltante + pg.importeMensual) - pg.importePagadoBitacora) > 0  "
+                +
+                "THEN (pg.importeFaltante + pg.importeMensual) - pg.importePagadoBitacora " +
                 " when pg.importeMensual - pg.importePagado  > 0 " +
                 " then  pg.importeMensual - pg.importePagado " +
-                " ELSE pg.importeMensual END AS importeAcumulado\r\n" + //
-                "FROM (\r\n" + //
-                "SELECT ps.ID_PAGO_SFPA AS idPagoSFPA, ps.ID_PLAN_SFPA AS idPlanSFPA,ps.ID_ESTATUS_PAGO AS idEstatus, v.DES_VELATORIO AS velatorio, ps.FEC_PARCIALIDAD AS fechaParcialidad, ps.IMP_MONTO_MENSUAL AS importeMensual, ep.DES_ESTATUS_PAGO_ANTICIPADO AS estatusPago, (\r\n"
-                + //
-                "SELECT\r\n" + //
-                "(IFNULL(SUM(bpa.IMP_PAGO),0) + IFNULL(SUM(bpa.IMP_AUTORIZADO_VALE_PARITARIO),0))\r\n" + //
-                "FROM SVC_BITACORA_PAGO_ANTICIPADO bpa\r\n" + //
-                "WHERE bpa.IND_ACTIVO = 1 AND bpa.ID_PAGO_SFPA = ps.ID_PAGO_SFPA) AS importePagado, ps.IND_ACTIVO, (\r\n"
-                + //
-                "SELECT IFNULL(SUM(sps.IMP_MONTO_MENSUAL),0)\r\n" + //
-                "FROM SVT_PAGO_SFPA sps\r\n" + //
-                "WHERE sps.ID_ESTATUS_PAGO = 2 AND sps.IND_ACTIVO = 1 AND sps.FEC_PARCIALIDAD <= CURDATE() AND sps.ID_PLAN_SFPA = ps.ID_PLAN_SFPA) AS importeFaltante, (\r\n"
-                + //
-                "SELECT IFNULL(SUM(bpaa.IMP_PAGO),0)  + IFNULL(SUM(bpaa.IMP_AUTORIZADO_VALE_PARITARIO),0)\r\n" + //
-                "FROM SVT_PAGO_SFPA sps\r\n" + //
-                "JOIN SVC_BITACORA_PAGO_ANTICIPADO bpaa ON bpaa.ID_PAGO_SFPA= sps.ID_PAGO_SFPA\r\n" + //
-                "WHERE sps.IND_ACTIVO = 1 AND sps.ID_PLAN_SFPA = ps.ID_PLAN_SFPA) AS importePagadoBitacora, ps.IMP_MONTO_MENSUAL\r\n"
-                + //
-                "FROM SVT_PAGO_SFPA ps\r\n" + //
-                "JOIN SVT_PLAN_SFPA pls ON pls.ID_PLAN_SFPA = ps.ID_PLAN_SFPA\r\n" + //
-                "JOIN SVC_VELATORIO v ON v.ID_VELATORIO = pls.ID_VELATORIO\r\n" + //
-                "JOIN SVC_ESTATUS_PAGO_ANTICIPADO ep ON ep.ID_ESTATUS_PAGO_ANTICIPADO = ps.ID_ESTATUS_PAGO) AS pg, (\r\n"
-                + //
-                "SELECT @ROW := 0) r\r\n" + //
+                " ELSE pg.importeMensual END AS importeAcumulado " +
+                "FROM ( " +
+                "SELECT ps.ID_PAGO_SFPA AS idPagoSFPA, ps.ID_PLAN_SFPA AS idPlanSFPA,ps.ID_ESTATUS_PAGO AS idEstatus, v.DES_VELATORIO AS velatorio, ps.FEC_PARCIALIDAD AS fechaParcialidad, ps.IMP_MONTO_MENSUAL AS importeMensual, ep.DES_ESTATUS_PAGO_ANTICIPADO AS estatusPago, ( "
+                +
+                "SELECT " +
+                "(IFNULL(SUM(bpa.IMP_PAGO),0) + IFNULL(SUM(bpa.IMP_AUTORIZADO_VALE_PARITARIO),0)) " +
+                "FROM SVC_BITACORA_PAGO_ANTICIPADO bpa " +
+                "WHERE bpa.IND_ACTIVO = 1 AND bpa.ID_PAGO_SFPA = ps.ID_PAGO_SFPA) AS importePagado, ps.IND_ACTIVO, ( "
+                +
+                "SELECT IFNULL(SUM(sps.IMP_MONTO_MENSUAL),0) " +
+                "FROM SVT_PAGO_SFPA sps " +
+                "WHERE sps.ID_ESTATUS_PAGO = 2 AND sps.IND_ACTIVO = 1 AND sps.FEC_PARCIALIDAD <= CURDATE() AND sps.ID_PLAN_SFPA = ps.ID_PLAN_SFPA) AS importeFaltante, ( "
+                +
+                "SELECT IFNULL(SUM(bpaa.IMP_PAGO),0)  + IFNULL(SUM(bpaa.IMP_AUTORIZADO_VALE_PARITARIO),0) " +
+                "FROM SVT_PAGO_SFPA sps " +
+                "JOIN SVC_BITACORA_PAGO_ANTICIPADO bpaa ON bpaa.ID_PAGO_SFPA= sps.ID_PAGO_SFPA " +
+                "WHERE sps.IND_ACTIVO = 1 AND sps.ID_PLAN_SFPA = ps.ID_PLAN_SFPA) AS importePagadoBitacora, ps.IMP_MONTO_MENSUAL "
+                +
+                "FROM SVT_PAGO_SFPA ps " +
+                "JOIN SVT_PLAN_SFPA pls ON pls.ID_PLAN_SFPA = ps.ID_PLAN_SFPA " +
+                "JOIN SVC_VELATORIO v ON v.ID_VELATORIO = pls.ID_VELATORIO " +
+                "JOIN SVC_ESTATUS_PAGO_ANTICIPADO ep ON ep.ID_ESTATUS_PAGO_ANTICIPADO = ps.ID_ESTATUS_PAGO) AS pg, ( "
+                +
+                "SELECT @ROW := 0) r " +
                 "WHERE pg.idPlanSFPA = ? AND pg.IND_ACTIVO = 1";
 
     }
@@ -149,63 +149,41 @@ public class PagosPlanSFPA {
     }
 
     public String validaMontoPagoSFPA() {
-        // return "SELECT CAST(IFNULL(SUM(sps.IMP_MONTO_MENSUAL),0) AS DOUBLE) AS deuda
-        // , " +
-        // " 0.0 AS pagado, " +
-        // " 0.0 AS mensualidad " +
-        // " FROM SVT_PAGO_SFPA sps " +
-        // " WHERE sps.ID_ESTATUS_PAGO = 2 " +
-        // " AND sps.IND_ACTIVO = 1 " +
-        // " AND sps.FEC_PARCIALIDAD <= CURDATE() AND sps.ID_PLAN_SFPA = ? " +
-        // " UNION " +
-        // " SELECT 0.0, " +
-        // " CAST(IFNULL(SUM(bpaa.IMP_PAGO),0) AS DOUBLE), " +
-        // " 0.0 " +
-        // " FROM SVT_PAGO_SFPA sps " +
-        // " JOIN SVC_BITACORA_PAGO_ANTICIPADO bpaa ON bpaa.ID_PAGO_SFPA=
-        // sps.ID_PAGO_SFPA " +
-        // " WHERE sps.IND_ACTIVO = 1 " +
-        // " AND sps.ID_PLAN_SFPA = ? " +
-        // " union " +
-        // " SELECT 0.0,0.0, " +
-        // " CAST(sps.IMP_MONTO_MENSUAL AS DOUBLE) " +
-        // " FROM SVT_PAGO_SFPA sps " +
-        // " WHERE sps.IND_ACTIVO = 1 " +
-        // " AND sps.ID_PLAN_SFPA = ? " +
-        // " AND sps.ID_PAGO_SFPA = ?";
 
-        return "SELECT CAST(IFNULL(SUM(sps.IMP_PAGO), 0.0) + ifnull(sum( sps.IMP_AUTORIZADO_VALE_PARITARIO), 0)  AS DOUBLE)\r\n"
-                + //
-                " - sps2.IMP_MONTO_MENSUAL AS deudaMensualActual,\r\n" + //
-                " 0.0 AS deudasPasadas,\r\n" + //
-                " 0.0 AS pagosRealizados\r\n" + //
-                " FROM SVC_BITACORA_PAGO_ANTICIPADO sps\r\n" + //
-                " JOIN svt_pago_sfpa sps2 ON\r\n" + //
-                "  sps2.ID_PAGO_SFPA = sps.ID_PAGO_SFPA\r\n" + //
-                " WHERE sps2.ID_PLAN_SFPA = ? \r\n" + //
-                " AND sps.IND_ACTIVO = 1 \r\n" + //
-                " AND MONTH(sps.FEC_ALTA) = MONTH(CURDATE()) \r\n" + //
-                " UNION ALL\r\n" + //
-                " SELECT 0 AS deudaMensualActual,\r\n" + //
-                " CAST(IFNULL(SUM(sps.IMP_MONTO_MENSUAL),0.0) AS DOUBLE) AS deudasPasadas, \r\n" + //
-                " sps.IMP_MONTO_MENSUAL AS pagosRealizados\r\n" + //
-                " FROM SVT_PAGO_SFPA sps\r\n" + //
-                " LEFT JOIN SVC_BITACORA_PAGO_ANTICIPADO bpaa \r\n" + //
-                " ON bpaa.ID_PAGO_SFPA = sps.ID_PAGO_SFPA\r\n" + //
-                " WHERE sps.IND_ACTIVO = 1 \r\n" + //
-                " AND sps.ID_PLAN_SFPA = ?\r\n" + //
-                " AND sps.ID_ESTATUS_PAGO = 2\r\n" + //
+        return "SELECT CAST(IFNULL(SUM(sps.IMP_PAGO), 0.0) + ifnull(sum( sps.IMP_AUTORIZADO_VALE_PARITARIO), 0)  AS DOUBLE) "
+                +
+                " - sps2.IMP_MONTO_MENSUAL AS deudaMensualActual, " +
+                " 0.0 AS deudasPasadas, " +
+                " 0.0 AS pagosRealizados " +
+                " FROM SVC_BITACORA_PAGO_ANTICIPADO sps " +
+                " JOIN svt_pago_sfpa sps2 ON " +
+                "  sps2.ID_PAGO_SFPA = sps.ID_PAGO_SFPA " +
+                " WHERE sps2.ID_PLAN_SFPA = ?  " +
+                " AND sps.IND_ACTIVO = 1  " +
+                " AND MONTH(sps.FEC_ALTA) = MONTH(CURDATE())  " +
+                " UNION ALL " +
+                " SELECT 0 AS deudaMensualActual, " +
+                " CAST(IFNULL(SUM(sps.IMP_MONTO_MENSUAL),0.0) AS DOUBLE) AS deudasPasadas,  " +
+                " sps.IMP_MONTO_MENSUAL AS pagosRealizados " +
+                " FROM SVT_PAGO_SFPA sps " +
+                " LEFT JOIN SVC_BITACORA_PAGO_ANTICIPADO bpaa  " +
+                " ON bpaa.ID_PAGO_SFPA = sps.ID_PAGO_SFPA " +
+                " AND bpaa.IND_ACTIVO = 1" +
+                " WHERE sps.IND_ACTIVO = 1  " +
+                " AND sps.ID_PLAN_SFPA = ? " +
+                " AND sps.ID_ESTATUS_PAGO = 2 " +
                 " " +
-                "  UNION ALL\r\n" + //
-                " SELECT 0.0 AS deudaMensualActual,\r\n" + //
-                " 0.0 AS deudasPasadas, \r\n" + //
-                " CAST(IFNULL(SUM(bpaa.IMP_PAGO),0.0) + ifnull(sum( bpaa.IMP_AUTORIZADO_VALE_PARITARIO), 0)  AS DOUBLE) AS pagosRealizados\r\n"
-                + //
-                " FROM SVT_PAGO_SFPA sps\r\n" + //
-                " JOIN SVC_BITACORA_PAGO_ANTICIPADO bpaa \r\n" + //
-                " ON bpaa.ID_PAGO_SFPA = sps.ID_PAGO_SFPA\r\n" + //
-                " WHERE sps.IND_ACTIVO = 1 \r\n" + //
-                " AND sps.ID_PLAN_SFPA = ? \r\n" + //
+                "  UNION ALL " +
+                " SELECT 0.0 AS deudaMensualActual, " +
+                " 0.0 AS deudasPasadas,  " +
+                " CAST(IFNULL(SUM(bpaa.IMP_PAGO),0.0) + ifnull(sum( bpaa.IMP_AUTORIZADO_VALE_PARITARIO), 0)  AS DOUBLE) AS pagosRealizados "
+                +
+                " FROM SVT_PAGO_SFPA sps " +
+                " JOIN SVC_BITACORA_PAGO_ANTICIPADO bpaa  " +
+                " ON bpaa.ID_PAGO_SFPA = sps.ID_PAGO_SFPA " +
+                " WHERE bpaa.IND_ACTIVO = 1  " +
+
+                " AND sps.ID_PLAN_SFPA = ?  " +
                 "";
     }
 
