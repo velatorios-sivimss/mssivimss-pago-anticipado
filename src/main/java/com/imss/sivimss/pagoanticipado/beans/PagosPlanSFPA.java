@@ -44,7 +44,7 @@ public class PagosPlanSFPA {
                 " SELECT IFNULL(SUM(bpaa.IMP_PAGO),0)  + IFNULL(SUM(bpaa.IMP_AUTORIZADO_VALE_PARITARIO),0) " +
                 " FROM SVT_PAGO_SFPA sps" +
                 " JOIN SVC_BITACORA_PAGO_ANTICIPADO bpaa ON bpaa.ID_PAGO_SFPA= sps.ID_PAGO_SFPA " +
-                " bpaa.IND_ACTIVO = 1  " +
+                " AND bpaa.IND_ACTIVO = 1  " +
                 " WHERE sps.IND_ACTIVO = 1 AND sps.ID_PLAN_SFPA = ps.ID_PLAN_SFPA) AS importePagadoBitacora, ps.IMP_MONTO_MENSUAL "
                 +
                 " FROM SVT_PAGO_SFPA ps " +
