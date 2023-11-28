@@ -763,8 +763,9 @@ public class PagoAnticipadoSFPAImpl implements PagoAnticipadoSFPAService {
 
                 }
 
-                if (deudaMensualActual > 0) {
-
+                if (deudaMensualActual == 0.0 && (deudasPasadas - pagosRealizados) == 0.0) {
+                    return 0.0;
+                } else if (deudaMensualActual > 0) {
                     if ((deudasPasadas - pagosRealizados) > 0) {
                         return (deudasPasadas - pagosRealizados);
                     }
