@@ -162,9 +162,9 @@ public class PagoAnticipadoSFPAImpl implements PagoAnticipadoSFPAService {
             if (rs.next()) {
                 idBitacora = rs.getInt(1);
             }
-            log.info("id bitacora", idBitacora);
-            Double costoRestante = validaCosto(connection, idPlan, idPagoSFPA);
-            System.out.println("el costo restante es" + costoRestante);
+
+            Double costoRestante = validaCosto(connection, idPlan);
+
             Integer estatusPagoSFPA = 8;// 8 estatus por pagar
 
             if (costoRestante == 0 || costoRestante == 0.0)
@@ -316,16 +316,15 @@ public class PagoAnticipadoSFPAImpl implements PagoAnticipadoSFPAService {
             String numeroAutorizacion = setValor(datos.get("numeroAutorizacion").asText());
             String folioAutorizacion = setValor(datos.get("folioAutorizacion").asText());
             String nombreBanco = setValor(datos.get("nombreBanco").asText());
-            BigDecimal importe = new BigDecimal(datos.get("importe").asDouble());
+            BigDecimal importe = BigDecimal.valueOf(datos.get("importe").asDouble());
             Integer idMetodoPago = datos.get("idMetodoPago").asInt();
             String valeParitaria = setValor(datos.get("valeParitaria").asText());
             String fechaValeParitaria = setValor(datos.get("fechaValeParitaria").asText());
-            BigDecimal importeValeParitaria = new BigDecimal(datos.get("importeValeParitaria").asDouble());
+            BigDecimal importeValeParitaria = BigDecimal.valueOf(datos.get("importeValeParitaria").asDouble());
             log.info("request {}", datos);
             String actualizarPagoBitagoraSFPA = pagosPlanSFPA.actualizarPagoBitagoraSFPA();
             connection = database.getConnection();
             log.info("Actualizar  bitacora  {}", actualizarPagoBitagoraSFPA);
-            System.out.println("sadasdasd" + importeValeParitaria);
             connection = database.getConnection();
             connection.setAutoCommit(false);
             preparedStatement = connection.prepareStatement(actualizarPagoBitagoraSFPA);
@@ -344,9 +343,8 @@ public class PagoAnticipadoSFPAImpl implements PagoAnticipadoSFPAService {
 
             preparedStatement.executeUpdate();
 
-            Double costoRestante = validaCosto(connection, idPlan, idPagoSFPA);
+            Double costoRestante = validaCosto(connection, idPlan);
             Integer estatusPagoSFPA = 8;// 8 estatus por pagar
-            System.out.println("el costo restante es" + costoRestante);
             if (costoRestante == 0 || costoRestante == 0.0)
                 estatusPagoSFPA = 5;// 5 pagado
             if (costoRestante == -1.0)
@@ -620,7 +618,7 @@ public class PagoAnticipadoSFPAImpl implements PagoAnticipadoSFPAService {
         datosReporte.put("velatorio", validaNull(reporteRequest.getNombreVelatorio()));
         datosReporte.put("rutaNombreReporte", reportePa);
         datosReporte.put("tipoReporte", reporteRequest.getTipoReporte());
-        log.info(datosReporte.get("consultaOrdenes").toString());
+        log.info("{}", datosReporte.get("consultaOrdenes"));
         return datosReporte;
     }
 
@@ -731,7 +729,7 @@ public class PagoAnticipadoSFPAImpl implements PagoAnticipadoSFPAService {
     }
 
     private Double validaCosto(Connection connection,
-            Integer idPlan, Integer idPagoSFPA) throws SQLException {
+            Integer idPlan) throws SQLException {
 
         ResultSet rs2 = null;
         Double deudaMensualActual = 0.0;
@@ -746,7 +744,6 @@ public class PagoAnticipadoSFPAImpl implements PagoAnticipadoSFPAService {
             preparedStatement.setInt(1, idPlan);
             preparedStatement.setInt(2, idPlan);
             preparedStatement.setInt(3, idPlan);
-            // preparedStatement.setInt(4, idPagoSFPA);
             rs2 = preparedStatement.executeQuery();
             rs = preparedStatement.executeQuery();
 
@@ -774,7 +771,9 @@ public class PagoAnticipadoSFPAImpl implements PagoAnticipadoSFPAService {
                 } else if (deudaMensualActual > 0) {
                     if ((deudaMensualActual - mensualidad) > mensualidad && (deudasPasadas - pagosRealizados) > 0) {
                         return (deudasPasadas - pagosRealizados);
-                    }
+                    } else if ((deudasPasadas - pagosRealizados) > 0)
+                        return (deudasPasadas - pagosRealizados);
+
                     return 0.0;
                 }
                 return deudaMensualActual;

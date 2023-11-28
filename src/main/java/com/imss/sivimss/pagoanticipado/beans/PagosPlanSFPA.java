@@ -206,7 +206,6 @@ public class PagosPlanSFPA {
                 " ON bpaa.ID_PAGO_SFPA = sps.ID_PAGO_SFPA\r\n" + //
                 " WHERE sps.IND_ACTIVO = 1 \r\n" + //
                 " AND sps.ID_PLAN_SFPA = ? \r\n" + //
-                " AND sps.ID_ESTATUS_PAGO = 2\r\n" + //
                 "";
     }
 
