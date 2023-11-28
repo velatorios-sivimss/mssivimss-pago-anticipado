@@ -421,6 +421,7 @@ public class PagoAnticipadoSFPAImpl implements PagoAnticipadoSFPAService {
             statement = connection.createStatement();
             String consulta = pagosPlanSFPA.desactivarPagoBitacora();
 
+            log.info("Desactivar pago {}", consulta);
             preparedStatement = connection.prepareStatement(consulta);
 
             preparedStatement.setInt(1, usuario.getIdUsuario());
