@@ -26,6 +26,8 @@ public class PagosPlanSFPA {
                 "CASE WHEN pg.idEstatus = 2 THEN 0 WHEN MONTH(pg.fechaParcialidad) = MONTH(CURDATE()) && ((pg.importeFaltante + pg.importeMensual) - pg.importePagadoBitacora) > 0 \r\n"
                 + //
                 "THEN (pg.importeFaltante + pg.importeMensual) - pg.importePagadoBitacora\r\n" + //
+                " when pg.importeMensual - pg.importePagado  > 0 " +
+                " then  pg.importeMensual - pg.importePagado " +
                 " ELSE pg.importeMensual END AS importeAcumulado\r\n" + //
                 "FROM (\r\n" + //
                 "SELECT ps.ID_PAGO_SFPA AS idPagoSFPA, ps.ID_PLAN_SFPA AS idPlanSFPA,ps.ID_ESTATUS_PAGO AS idEstatus, v.DES_VELATORIO AS velatorio, ps.FEC_PARCIALIDAD AS fechaParcialidad, ps.IMP_MONTO_MENSUAL AS importeMensual, ep.DES_ESTATUS_PAGO_ANTICIPADO AS estatusPago, (\r\n"
