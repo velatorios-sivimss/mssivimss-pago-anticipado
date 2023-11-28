@@ -149,28 +149,41 @@ public class PagosPlanSFPA {
     }
 
     public String validaMontoPagoSFPA() {
-        return "SELECT CAST(IFNULL(SUM(sps.IMP_MONTO_MENSUAL),0) AS DOUBLE) AS deuda , " +
-                " 0.0 AS pagado, " +
-                " 0.0 AS mensualidad " +
-                " FROM SVT_PAGO_SFPA sps " +
-                " WHERE sps.ID_ESTATUS_PAGO = 2  " +
-                " AND sps.IND_ACTIVO = 1 " +
-                " AND sps.FEC_PARCIALIDAD <= CURDATE() AND sps.ID_PLAN_SFPA = ? " +
-                " UNION   " +
-                " SELECT 0.0, " +
-                " CAST(IFNULL(SUM(bpaa.IMP_PAGO),0) AS DOUBLE), " +
-                " 0.0 " +
-                " FROM SVT_PAGO_SFPA sps " +
-                " JOIN SVC_BITACORA_PAGO_ANTICIPADO bpaa ON bpaa.ID_PAGO_SFPA= sps.ID_PAGO_SFPA " +
-                " WHERE sps.IND_ACTIVO = 1 " +
-                " AND sps.ID_PLAN_SFPA = ? " +
-                " union " +
-                " SELECT 0.0,0.0,  " +
-                " CAST(sps.IMP_MONTO_MENSUAL AS DOUBLE)  " +
-                " FROM SVT_PAGO_SFPA sps " +
-                " WHERE sps.IND_ACTIVO = 1  " +
-                " AND sps.ID_PLAN_SFPA = ? " +
-                " AND sps.ID_PAGO_SFPA = ?";
+        // return "SELECT CAST(IFNULL(SUM(sps.IMP_MONTO_MENSUAL),0) AS DOUBLE) AS deuda
+        // , " +
+        // " 0.0 AS pagado, " +
+        // " 0.0 AS mensualidad " +
+        // " FROM SVT_PAGO_SFPA sps " +
+        // " WHERE sps.ID_ESTATUS_PAGO = 2 " +
+        // " AND sps.IND_ACTIVO = 1 " +
+        // " AND sps.FEC_PARCIALIDAD <= CURDATE() AND sps.ID_PLAN_SFPA = ? " +
+        // " UNION " +
+        // " SELECT 0.0, " +
+        // " CAST(IFNULL(SUM(bpaa.IMP_PAGO),0) AS DOUBLE), " +
+        // " 0.0 " +
+        // " FROM SVT_PAGO_SFPA sps " +
+        // " JOIN SVC_BITACORA_PAGO_ANTICIPADO bpaa ON bpaa.ID_PAGO_SFPA=
+        // sps.ID_PAGO_SFPA " +
+        // " WHERE sps.IND_ACTIVO = 1 " +
+        // " AND sps.ID_PLAN_SFPA = ? " +
+        // " union " +
+        // " SELECT 0.0,0.0, " +
+        // " CAST(sps.IMP_MONTO_MENSUAL AS DOUBLE) " +
+        // " FROM SVT_PAGO_SFPA sps " +
+        // " WHERE sps.IND_ACTIVO = 1 " +
+        // " AND sps.ID_PLAN_SFPA = ? " +
+        // " AND sps.ID_PAGO_SFPA = ?";
+
+        return "select " +
+                "cast(IFNULL(SUM(sps.IMP_PAGO), 0) as DOUBLE) - sps2.IMP_MONTO_MENSUAL  as deuda," +
+                " 0.0 as pagado," +
+                "    0.0 as mensualidad" +
+                " from         SVC_BITACORA_PAGO_ANTICIPADO sps" +
+                "    join svt_pago_sfpa sps2 on" +
+                "      sps2.ID_PAGO_SFPA = sps.ID_PAGO_SFPA" +
+                "          where sps2.ID_PLAN_SFPA = ?" +
+                "   and sps.IND_ACTIVO = 1" +
+                "and MONTH(sps.FEC_ALTA) = MONTH(CURDATE())";
     }
 
     public String actualizaEstatusPagoSFPA() {

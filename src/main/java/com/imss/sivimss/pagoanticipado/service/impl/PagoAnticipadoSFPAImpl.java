@@ -742,9 +742,9 @@ public class PagoAnticipadoSFPAImpl implements PagoAnticipadoSFPAService {
             log.info("query {}", validaMontoPagoSFPA);
             preparedStatement = connection.prepareStatement(validaMontoPagoSFPA);
             preparedStatement.setInt(1, idPlan);
-            preparedStatement.setInt(2, idPlan);
-            preparedStatement.setInt(3, idPlan);
-            preparedStatement.setInt(4, idPagoSFPA);
+            // preparedStatement.setInt(2, idPlan);
+            // preparedStatement.setInt(3, idPlan);
+            // preparedStatement.setInt(4, idPagoSFPA);
             rs2 = preparedStatement.executeQuery();
             rs = preparedStatement.executeQuery();
 
@@ -762,6 +762,7 @@ public class PagoAnticipadoSFPAImpl implements PagoAnticipadoSFPAService {
                     contador++;
 
                 }
+
                 return (deuda - pagada) + mensualidad;
             }
 
