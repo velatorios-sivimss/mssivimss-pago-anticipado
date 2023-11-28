@@ -164,6 +164,7 @@ public class PagoAnticipadoSFPAImpl implements PagoAnticipadoSFPAService {
             }
             log.info("id bitacora", idBitacora);
             Double costoRestante = validaCosto(connection, idPlan, idPagoSFPA);
+            System.out.println("el costo restante es" + costoRestante);
             Integer estatusPagoSFPA = 8;// 8 estatus por pagar
 
             if (costoRestante == 0 || costoRestante == 0.0)
@@ -345,7 +346,7 @@ public class PagoAnticipadoSFPAImpl implements PagoAnticipadoSFPAService {
 
             Double costoRestante = validaCosto(connection, idPlan, idPagoSFPA);
             Integer estatusPagoSFPA = 8;// 8 estatus por pagar
-
+            System.out.println("el costo restante es" + costoRestante);
             if (costoRestante == 0 || costoRestante == 0.0)
                 estatusPagoSFPA = 5;// 5 pagado
             if (costoRestante == -1.0)
