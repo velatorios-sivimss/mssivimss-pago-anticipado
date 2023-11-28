@@ -733,17 +733,17 @@ public class PagoAnticipadoSFPAImpl implements PagoAnticipadoSFPAService {
             Integer idPlan, Integer idPagoSFPA) throws SQLException {
 
         ResultSet rs2 = null;
-        Double deuda = 0.0;
-        Double pagada = 0.0;
-        Double mensualidad = 0.0;
+        Double deudaMensualActual = 0.0;
+        Double deudasPasadas = 0.0;
+        Double pagosRealizados = 0.0;
         try {
 
             String validaMontoPagoSFPA = pagosPlanSFPA.validaMontoPagoSFPA();
             log.info("query {}", validaMontoPagoSFPA);
             preparedStatement = connection.prepareStatement(validaMontoPagoSFPA);
             preparedStatement.setInt(1, idPlan);
-            // preparedStatement.setInt(2, idPlan);
-            // preparedStatement.setInt(3, idPlan);
+            preparedStatement.setInt(2, idPlan);
+            preparedStatement.setInt(3, idPlan);
             // preparedStatement.setInt(4, idPagoSFPA);
             rs2 = preparedStatement.executeQuery();
             rs = preparedStatement.executeQuery();
@@ -754,16 +754,24 @@ public class PagoAnticipadoSFPAImpl implements PagoAnticipadoSFPAService {
                 while (rs.next()) {
 
                     if (contador == 0)
-                        deuda = (Double) rs.getObject(1);
+                        deudaMensualActual = (Double) rs.getObject(1);
                     if (contador == 1)
-                        pagada = (Double) rs.getObject(2);
+                        deudasPasadas = (Double) rs.getObject(2);
                     if (contador == 2)
-                        mensualidad = (Double) rs.getObject(3);
+                        pagosRealizados = (Double) rs.getObject(3);
                     contador++;
 
                 }
-                return deuda;
-                // return (deuda - pagada) + mensualidad;
+
+                if (deudaMensualActual > 0) {
+
+                    if ((deudasPasadas - pagosRealizados) > 0) {
+                        return (deudasPasadas - pagosRealizados);
+                    }
+                    return deudaMensualActual;
+                }
+                return deudaMensualActual;
+
             }
 
         } catch (Exception e) {

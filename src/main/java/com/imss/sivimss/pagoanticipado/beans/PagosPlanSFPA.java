@@ -174,16 +174,37 @@ public class PagosPlanSFPA {
         // " AND sps.ID_PLAN_SFPA = ? " +
         // " AND sps.ID_PAGO_SFPA = ?";
 
-        return "select " +
-                " cast(IFNULL(SUM(sps.IMP_PAGO), 0) as DOUBLE) - sps2.IMP_MONTO_MENSUAL  as deuda," +
-                " 0.0 as pagado," +
-                "    0.0 as mensualidad" +
-                " from         SVC_BITACORA_PAGO_ANTICIPADO sps" +
-                "    join svt_pago_sfpa sps2 on" +
-                "      sps2.ID_PAGO_SFPA = sps.ID_PAGO_SFPA" +
-                "          where sps2.ID_PLAN_SFPA = ?" +
-                "   and sps.IND_ACTIVO = 1" +
-                " and MONTH(sps.FEC_ALTA) = MONTH(CURDATE())";
+        return "SELECT CAST(IFNULL(SUM(sps.IMP_PAGO), 0) AS DOUBLE)\r\n" + //
+                " - sps2.IMP_MONTO_MENSUAL AS deudaMensualActual,\r\n" + //
+                " 0.0 AS deudasPasadas,\r\n" + //
+                " 0.0 AS pagosRealizados\r\n" + //
+                " FROM SVC_BITACORA_PAGO_ANTICIPADO sps\r\n" + //
+                " JOIN svt_pago_sfpa sps2 ON\r\n" + //
+                "  sps2.ID_PAGO_SFPA = sps.ID_PAGO_SFPA\r\n" + //
+                " WHERE sps2.ID_PLAN_SFPA = ? \r\n" + //
+                " AND sps.IND_ACTIVO = 1 \r\n" + //
+                " AND MONTH(sps.FEC_ALTA) = MONTH(CURDATE()) \r\n" + //
+                " UNION ALL\r\n" + //
+                " SELECT 0 AS deudaMensualActual,\r\n" + //
+                " CAST(IFNULL(SUM(sps.IMP_MONTO_MENSUAL),0) AS DOUBLE) AS deudasPasadas, \r\n" + //
+                " 0 AS pagosRealizados\r\n" + //
+                " FROM SVT_PAGO_SFPA sps\r\n" + //
+                " LEFT JOIN SVC_BITACORA_PAGO_ANTICIPADO bpaa \r\n" + //
+                " ON bpaa.ID_PAGO_SFPA = sps.ID_PAGO_SFPA\r\n" + //
+                " WHERE sps.IND_ACTIVO = 1 \r\n" + //
+                " AND sps.ID_PLAN_SFPA = ?\r\n" + //
+                " AND sps.ID_ESTATUS_PAGO = 2\r\n" + //
+                "  UNION ALL\r\n" + //
+                " SELECT 0.0 AS deudaMensualActual,\r\n" + //
+                " 0.0 AS deudasPasadas, \r\n" + //
+                " CAST(IFNULL(SUM(bpaa.IMP_PAGO),0) AS DOUBLE) AS pagosRealizados\r\n" + //
+                " FROM SVT_PAGO_SFPA sps\r\n" + //
+                " JOIN SVC_BITACORA_PAGO_ANTICIPADO bpaa \r\n" + //
+                " ON bpaa.ID_PAGO_SFPA = sps.ID_PAGO_SFPA\r\n" + //
+                " WHERE sps.IND_ACTIVO = 1 \r\n" + //
+                " AND sps.ID_PLAN_SFPA = ? \r\n" + //
+                " AND sps.ID_ESTATUS_PAGO = 2\r\n" + //
+                "";
     }
 
     public String actualizaEstatusPagoSFPA() {
