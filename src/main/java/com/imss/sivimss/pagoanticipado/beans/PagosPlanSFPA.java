@@ -175,7 +175,7 @@ public class PagosPlanSFPA {
         // " AND sps.ID_PAGO_SFPA = ?";
 
         return "select " +
-                "cast(IFNULL(SUM(sps.IMP_PAGO), 0) as DOUBLE) - sps2.IMP_MONTO_MENSUAL  as deuda," +
+                " cast(IFNULL(SUM(sps.IMP_PAGO), 0) as DOUBLE) - sps2.IMP_MONTO_MENSUAL  as deuda," +
                 " 0.0 as pagado," +
                 "    0.0 as mensualidad" +
                 " from         SVC_BITACORA_PAGO_ANTICIPADO sps" +
@@ -183,7 +183,7 @@ public class PagosPlanSFPA {
                 "      sps2.ID_PAGO_SFPA = sps.ID_PAGO_SFPA" +
                 "          where sps2.ID_PLAN_SFPA = ?" +
                 "   and sps.IND_ACTIVO = 1" +
-                "and MONTH(sps.FEC_ALTA) = MONTH(CURDATE())";
+                " and MONTH(sps.FEC_ALTA) = MONTH(CURDATE())";
     }
 
     public String actualizaEstatusPagoSFPA() {

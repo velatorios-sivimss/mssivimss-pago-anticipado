@@ -762,8 +762,8 @@ public class PagoAnticipadoSFPAImpl implements PagoAnticipadoSFPAService {
                     contador++;
 
                 }
-
-                return (deuda - pagada) + mensualidad;
+                return deuda;
+                // return (deuda - pagada) + mensualidad;
             }
 
         } catch (Exception e) {
