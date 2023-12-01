@@ -413,12 +413,25 @@ public class PagoAnticipadoSFPAImpl implements PagoAnticipadoSFPAService {
         Gson gson = new Gson();
         UsuarioDto usuario = gson.fromJson((String) authentication.getPrincipal(), UsuarioDto.class);
         Integer idPagoBitacora = 0;
+        Integer idPagoParcialidad = 0;
+        Integer idPlan = 0;
+        Integer totalParcialidades = 0;
+        Integer idPrimerParcialidad = 0;
+        Integer idUltimaParcialidad = 0;
         JsonNode datos = mapper.readTree(request.getDatos().get(AppConstantes.DATOS).toString());
         idPagoBitacora = datos.get("idPagoBitacora").asInt();
+        idPagoParcialidad = datos.get("idPagoParcialidad").asInt();
+        idPlan = datos.get("idPlan").asInt();
+        totalParcialidades = datos.get("totalParcialidades").asInt();
+        idPrimerParcialidad = datos.get("idPrimerParcialidad").asInt();
+        idUltimaParcialidad = datos.get("idUltimaParcialidad").asInt();
+        
         ResultSet rs2 = null;
         try {
             connection = database.getConnection();
             statement = connection.createStatement();
+            
+            // desactiva pago bitacora
             String consulta = pagosPlanSFPA.desactivarPagoBitacora();
 
             log.info("Desactivar pago {}", consulta);
@@ -426,15 +439,93 @@ public class PagoAnticipadoSFPAImpl implements PagoAnticipadoSFPAService {
 
             preparedStatement.setInt(1, usuario.getIdUsuario());
             preparedStatement.setInt(2, idPagoBitacora);
+            preparedStatement.executeUpdate();
+            log.info("Desactivar parcialidad {}", consulta);
 
-            int rows = preparedStatement.executeUpdate();
+            // cambiar estatus cuando te pagan a un 1 parcialidad
+            
+            if (idPagoParcialidad.equals(idPrimerParcialidad) && totalParcialidades.equals(0)) {
+				// buscar pagos bitacora
+                // cambiar estatus parcialidad
+			    consulta = pagosPlanSFPA.actualizaEstatusPagoSFPA();
+			    preparedStatement = connection.prepareStatement(consulta);
 
-            if (rows > 0) {
-                response = new Response<>(false, 200, AppConstantes.EXITO);
+			    preparedStatement.setInt(1, 8);
+			    preparedStatement.setInt(2, usuario.getIdUsuario());
+			    preparedStatement.setInt(3, idPagoParcialidad);
+			    preparedStatement.setInt(4, idPlan);
 
-            } else {
-                response = new Response<>(true, 500, AppConstantes.ERROR_GUARDAR);
-            }
+			    preparedStatement.executeUpdate();
+			         // cambiar estaus plan
+			    consulta = pagosPlanSFPA.actualizaEstatusPlan();
+			    log.info("Desactivar parcialidad {}", consulta);
+			    preparedStatement = connection.prepareStatement(consulta);
+
+			    preparedStatement.setInt(1, 1);
+			    preparedStatement.setInt(2, usuario.getIdUsuario());
+			    preparedStatement.setInt(3, idPlan);
+			    preparedStatement.executeUpdate();
+
+			}
+            
+            if (idPagoParcialidad.equals(idPrimerParcialidad) 
+            		&& !totalParcialidades.equals(0)) {
+            	 // cambiar estatus parcialidad
+			    consulta = pagosPlanSFPA.actualizaEstatusPagoSFPA();
+			    preparedStatement = connection.prepareStatement(consulta);
+
+			    preparedStatement.setInt(1, 8);
+			    preparedStatement.setInt(2, usuario.getIdUsuario());
+			    preparedStatement.setInt(3, idPagoParcialidad);
+			    preparedStatement.setInt(4, idPlan);
+			    preparedStatement.executeUpdate();
+			         // cambiar estaus plan
+			    consulta = pagosPlanSFPA.actualizaEstatusPlan();
+			    log.info("Desactivar parcialidad {}", consulta);
+			    preparedStatement = connection.prepareStatement(consulta);
+
+			    preparedStatement.setInt(1, 1);
+			    preparedStatement.setInt(2, usuario.getIdUsuario());
+			    preparedStatement.setInt(3, idPlan);
+			    preparedStatement.executeUpdate();
+
+				
+			}else if(idPagoParcialidad.equals(idUltimaParcialidad) && !totalParcialidades.equals(0)) {
+				 // cambiar estatus parcialidad
+			    consulta = pagosPlanSFPA.actualizaEstatusPagoSFPA();
+			    preparedStatement = connection.prepareStatement(consulta);
+
+			    preparedStatement.setInt(1, 8);
+			    preparedStatement.setInt(2, usuario.getIdUsuario());
+			    preparedStatement.setInt(3, idPagoParcialidad);
+			    preparedStatement.setInt(4, idPlan);
+
+			    preparedStatement.executeUpdate();
+			         // cambiar estaus plan
+			    consulta = pagosPlanSFPA.actualizaEstatusPlan();
+			    log.info("Desactivar parcialidad {}", consulta);
+			    preparedStatement = connection.prepareStatement(consulta);
+
+			    preparedStatement.setInt(1, 2);
+			    preparedStatement.setInt(2, usuario.getIdUsuario());
+			    preparedStatement.setInt(3, idPlan);
+			    preparedStatement.executeUpdate();
+			}else if(!totalParcialidades.equals(0)) {
+				 // cambiar estatus parcialidad
+			    consulta = pagosPlanSFPA.actualizaEstatusPagoSFPA();
+			    preparedStatement = connection.prepareStatement(consulta);
+
+			    preparedStatement.setInt(1, 8);
+			    preparedStatement.setInt(2, usuario.getIdUsuario());
+			    preparedStatement.setInt(3, idPagoParcialidad);
+			    preparedStatement.setInt(4, idPlan);
+
+			    preparedStatement.executeUpdate();
+			}
+           
+            response = new Response<>(false, 200, AppConstantes.EXITO);
+
+         
 
         } catch (Exception e) {
             log.error(AppConstantes.ERROR_QUERY.concat(AppConstantes.ERROR_CONSULTAR));

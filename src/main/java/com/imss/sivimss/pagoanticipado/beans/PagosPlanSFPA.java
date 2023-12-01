@@ -60,6 +60,27 @@ public class PagosPlanSFPA {
     public String obtenerDetalleBitacoraPago() {
 
         SelectQueryUtil selectQueryUtil = new SelectQueryUtil();
+        SelectQueryUtil selectQueryUtilTotalParcialidades = new SelectQueryUtil();
+        SelectQueryUtil selectQueryUtilPrimerParcialidad = new SelectQueryUtil();
+        SelectQueryUtil selectQueryUtilUltimaParcialidad = new SelectQueryUtil();
+        
+        
+        selectQueryUtilTotalParcialidades.select("COUNT(PA.ID_PLAN_SFPA)")
+        .from("SVT_PAGO_SFPA PA")
+        .where("PA.ID_PLAN_SFPA=SPS.ID_PLAN_SFPA");
+        
+        selectQueryUtilPrimerParcialidad
+        .select("MIN(PA.ID_PAGO_SFPA)")
+        .from("SVT_PAGO_SFPA PA")
+        .where("PA.ID_PLAN_SFPA=SPS.ID_PLAN_SFPA");
+
+        selectQueryUtilUltimaParcialidad
+        .select("MAX(PA.ID_PAGO_SFPA)")
+        .from("SVT_PAGO_SFPA PA")
+        .where("PA.ID_PLAN_SFPA=SPS.ID_PLAN_SFPA");
+        
+        
+        
         SelectQueryUtil selectQuery = new SelectQueryUtil();
         selectQueryUtil
                 .select("SBPA.ID_BITACORA_PAGO AS idBitacora",
@@ -77,7 +98,11 @@ public class PagosPlanSFPA {
                         "SBPA.FEC_VALE_PARITARIO AS fechaValeParitario",
                         "SBPA.IMP_AUTORIZADO_VALE_PARITARIO AS importeValeParitario",
                         "CASE WHEN SBPA.IND_ACTIVO = 1 THEN 'Pagado'" +
-                                "ELSE 'Cancelado' END AS estatus")
+                                "ELSE 'Cancelado' END AS estatus",
+                                "CASE WHEN ("+selectQueryUtilTotalParcialidades.build()+") = 1 "+
+                                "then 0 else 1 end AS totalParcialidades",
+                                "("+selectQueryUtilPrimerParcialidad.build()+") AS idPrimerParcialidad",
+                                "("+selectQueryUtilUltimaParcialidad.build()+") AS idUltimaParcialidad")
                 .from("SVC_BITACORA_PAGO_ANTICIPADO SBPA ")
                 .innerJoin("SVT_PAGO_SFPA SPS", "SBPA.ID_PAGO_SFPA = SPS.ID_PAGO_SFPA")
                 .innerJoin("SVC_METODO_PAGO SMP", "SBPA.ID_METODO_PAGO = SMP.ID_METODO_PAGO")
