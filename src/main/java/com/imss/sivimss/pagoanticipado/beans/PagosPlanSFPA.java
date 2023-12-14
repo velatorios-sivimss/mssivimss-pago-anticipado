@@ -257,5 +257,23 @@ public class PagosPlanSFPA {
                 " WHERE  ID_BITACORA_PAGO = ?" +
                 " AND  ID_PAGO_SFPA = ?";
     }
+    
+    public String obtenerFolioReciboPagoPlan() {
+    	SelectQueryUtil selectQuery = new SelectQueryUtil();
+    	selectQuery.select(" LPAD((case when ( SELECT COUNT(*) FROM SVT_PAGO_SFPA SPS WHERE REF_FOLIO_RECIBO IS NOT NULL) = 0 "
+    			+ " then 1 else (SELECT COUNT(*)+ 1 FROM SVT_PAGO_SFPA SPS WHERE REF_FOLIO_RECIBO IS NOT NULL ) "
+    			+ " end ),7,'0') ")
+    	.from("DUAL");
+    	query=selectQuery.build();
+    	log.info("{}",query);
+        return query;
+    }
 
+    public String actualizaFolioReciboPagoPlan() {
+        return " UPDATE SVT_PAGO_SFPA SET ID_USUARIO_MODIFICA = ?," +
+                " FEC_ACTUALIZACION = CURDATE(), " +
+                " REF_FOLIO_RECIBO = ("+this.obtenerFolioReciboPagoPlan()+")" +
+                " WHERE ID_PAGO_SFPA =?" +
+                " AND ID_PLAN_SFPA = ?";
+    }
 }

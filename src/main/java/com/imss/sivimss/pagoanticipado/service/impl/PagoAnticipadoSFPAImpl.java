@@ -167,8 +167,10 @@ public class PagoAnticipadoSFPAImpl implements PagoAnticipadoSFPAService {
 
             Integer estatusPagoSFPA = 8;// 8 estatus por pagar
 
-            if (costoRestante == 0 || costoRestante == 0.0)
+            if (costoRestante == 0 || costoRestante == 0.0) {
                 estatusPagoSFPA = 5;// 5 pagado
+                this.actualizarFolioPago(idPagoSFPA, idPlan, idUsuario);
+            }
             if (costoRestante == -1.0)
                 return new Response<>(false, 500, AppConstantes.ERROR_QUERY, null);
 
@@ -225,7 +227,7 @@ public class PagoAnticipadoSFPAImpl implements PagoAnticipadoSFPAService {
         }
 
     }
-
+    
     @Override
     public Response<Object> verDetallePagos(DatosRequest request, Authentication authentication)
             throws SQLException, IOException {
@@ -927,5 +929,16 @@ public class PagoAnticipadoSFPAImpl implements PagoAnticipadoSFPAService {
             return valor;
         }
     }
+    
+    private void actualizarFolioPago(Integer idPagoSFPA, Integer idPlan, Integer idUsuario) throws SQLException {
+   	 String actualizaEstatusPagoSFPA = pagosPlanSFPA.actualizaFolioReciboPagoPlan();
+        log.info("actualizarFolioPago  {}", actualizaEstatusPagoSFPA);
+        preparedStatement = connection.prepareStatement(actualizaEstatusPagoSFPA);
+        preparedStatement.setInt(1, idUsuario);
+        preparedStatement.setInt(2, idPagoSFPA);
+        preparedStatement.setInt(3, idPlan);
+        preparedStatement.executeUpdate();
+   }
+
 
 }
