@@ -28,7 +28,7 @@ public class PagosPlanSFPA {
                 " THEN (pg.importeFaltante + pg.importeMensual) - pg.importePagadoBitacora " +
                 " when pg.importeMensual - pg.importePagado  > 0 " +
                 " then  pg.importeMensual - pg.importePagado " +
-                " ELSE pg.importeMensual END AS importeAcumulado " +
+                " ELSE pg.importeMensual END AS importeAcumulado, pg.folioRecibo " +
                 " FROM ( " +
                 " SELECT ps.ID_PAGO_SFPA AS idPagoSFPA, ps.ID_PLAN_SFPA AS idPlanSFPA,ps.ID_ESTATUS_PAGO AS idEstatus, v.DES_VELATORIO AS velatorio, ps.FEC_PARCIALIDAD AS fechaParcialidad, ps.IMP_MONTO_MENSUAL AS importeMensual, ep.DES_ESTATUS_PAGO_ANTICIPADO AS estatusPago, ( "
                 +
