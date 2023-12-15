@@ -347,8 +347,10 @@ public class PagoAnticipadoSFPAImpl implements PagoAnticipadoSFPAService {
 
             Double costoRestante = validaCosto(connection, idPlan);
             Integer estatusPagoSFPA = 8;// 8 estatus por pagar
-            if (costoRestante == 0 || costoRestante == 0.0)
+            if (costoRestante == 0 || costoRestante == 0.0) {
                 estatusPagoSFPA = 5;// 5 pagado
+                this.actualizarFolioPago(idPagoSFPA, idPlan, idUsuario);
+            }
             if (costoRestante == -1.0)
                 return new Response<>(false, 500, AppConstantes.ERROR_QUERY, null);
 
