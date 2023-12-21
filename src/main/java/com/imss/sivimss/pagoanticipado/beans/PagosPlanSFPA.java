@@ -219,6 +219,7 @@ public class PagosPlanSFPA {
 
     public String actualizaEstatusPagoSFPA() {
         return " UPDATE SVT_PAGO_SFPA SET ID_ESTATUS_PAGO = ?," +
+                " IND_TIPO_PAGO = 1 ," +
                 " ID_USUARIO_MODIFICA = ?," +
                 " FEC_ACTUALIZACION = CURDATE() " +
                 " WHERE ID_PAGO_SFPA =?" +

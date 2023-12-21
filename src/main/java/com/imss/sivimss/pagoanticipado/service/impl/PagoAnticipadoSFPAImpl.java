@@ -51,6 +51,9 @@ public class PagoAnticipadoSFPAImpl implements PagoAnticipadoSFPAService {
 
     @Value("${data.msit_REPORTE_PA}")
     private String reportePa;
+    
+    @Value("${data.msit_REPORTE_RECIBO}")
+    private String reporteReciboPago;
 
     @Autowired
     private ProviderServiceRestTemplate providerRestTemplate;
@@ -941,6 +944,32 @@ public class PagoAnticipadoSFPAImpl implements PagoAnticipadoSFPAService {
         preparedStatement.setInt(3, idPlan);
         preparedStatement.executeUpdate();
    }
+
+	@Override
+	public Response<?> descargarReporteReciboPago(DatosRequest request, Authentication authentication)
+			throws IOException, ParseException {
+		 ObjectMapper mapper = new ObjectMapper();
+		 JsonNode datos = mapper.readTree(request.getDatos().get(AppConstantes.DATOS)
+                 .toString());
+         Integer idPagoSfpa = datos.get("idPagoSfpa").asInt();
+         String parcialidad = datos.get("parcialidad").asText();
+         String importeRecibo = datos.get("importeRecibo").asText();
+		 return providerRestTemplate.consumirServicioReportes(generarDatosReporteReciboPago(idPagoSfpa,parcialidad,importeRecibo), urlReportes,
+	                authentication);
+	}
+	
+	
+	private Map<String, Object> generarDatosReporteReciboPago(Integer idPagoSfpa, String parcialidad, String importeRecibo) {
+        Map<String, Object> datosPdf = new HashMap<>();
+        NumeroLetras numeroLetras= new NumeroLetras();
+        BigDecimal bigDecimal= new BigDecimal(importeRecibo);
+        datosPdf.put("rutaNombreReporte", reporteReciboPago);
+        datosPdf.put("tipoReporte", "pdf");
+        datosPdf.put("idParcialidad", idPagoSfpa);
+        datosPdf.put("numeroParcialidad", parcialidad);
+        datosPdf.put("importeTexto", numeroLetras.Convertir(bigDecimal.toString(),true));
+        return datosPdf;
+    }
 
 
 }
