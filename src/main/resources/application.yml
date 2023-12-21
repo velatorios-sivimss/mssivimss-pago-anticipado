@@ -46,6 +46,7 @@ endpoints:
 
 data:
   msit_REPORTE_PA: reportes/modulo/ReportePACU51.jrxml
+  msit_REPORTE_RECIBO: reportes/plantilla/ANEXO26_RECIBO_PAGO_ANTICIPADO.jrxml
 
 jwt:
   secretkey-flujo: funcionamuybien
