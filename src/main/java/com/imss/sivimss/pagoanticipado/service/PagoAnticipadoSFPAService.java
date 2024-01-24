@@ -40,5 +40,8 @@ public interface PagoAnticipadoSFPAService {
         
         Response<?> descargarReporteReciboPago(DatosRequest request, Authentication authentication)
                 throws IOException, ParseException;
+        
+        Response<?> descargarReportePagosParcialidades(DatosRequest request, Authentication authentication)
+                throws IOException, ParseException;
 
 }

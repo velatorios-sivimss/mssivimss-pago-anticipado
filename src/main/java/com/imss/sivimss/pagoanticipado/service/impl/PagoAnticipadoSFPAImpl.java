@@ -55,6 +55,9 @@ public class PagoAnticipadoSFPAImpl implements PagoAnticipadoSFPAService {
     @Value("${data.msit_REPORTE_RECIBO}")
     private String reporteReciboPago;
 
+    @Value("${data.msit_REPORTE_PAGO_PARCIALIDADES}")
+    private String reportePagoParcialidades;
+
     @Autowired
     private ProviderServiceRestTemplate providerRestTemplate;
     @Autowired
@@ -970,6 +973,30 @@ public class PagoAnticipadoSFPAImpl implements PagoAnticipadoSFPAService {
         datosPdf.put("importeTexto", numeroLetras.Convertir(bigDecimal.toString(),true));
         return datosPdf;
     }
+
+	@Override
+	public Response<?> descargarReportePagosParcialidades(DatosRequest request, Authentication authentication)
+			throws IOException, ParseException {
+		 ObjectMapper mapper = new ObjectMapper();
+		 JsonNode datos = mapper.readTree(request.getDatos().get(AppConstantes.DATOS)
+                 .toString());
+		 String folio=datos.get("folio").asText();
+		 String nombreContratante=datos.get("nombreContratante").asText();
+		 String tipoReporte=datos.get("tipoReporte").asText();
+		 Integer idPlanSFPA=datos.get("idPlanSFPA").asInt();
+		 Map<String, Object>parametros= new HashMap<>();
+		 if(tipoReporte.equals("xls")) {
+			 parametros.put("IS_IGNORE_PAGINATION", true);
+		 }
+		 parametros.put("folio", folio);
+		 parametros.put("nombreContratante", nombreContratante);
+		 parametros.put("idPlanSFPA", idPlanSFPA);
+		 parametros.put("rutaNombreReporte", reportePagoParcialidades);
+		 parametros.put("tipoReporte", tipoReporte);
+		 return providerRestTemplate.consumirServicioReportes(parametros, urlReportes,
+	                authentication);
+		 
+	}
 
 
 }
