@@ -985,9 +985,11 @@ public class PagoAnticipadoSFPAImpl implements PagoAnticipadoSFPAService {
 		 String tipoReporte=datos.get("tipoReporte").asText();
 		 Integer idPlanSFPA=datos.get("idPlanSFPA").asInt();
 		 Map<String, Object>parametros= new HashMap<>();
+		 
 		 if(tipoReporte.equals("xls")) {
 			 parametros.put("IS_IGNORE_PAGINATION", true);
 		 }
+		 
 		 parametros.put("folio", folio);
 		 parametros.put("nombreContratante", nombreContratante);
 		 parametros.put("idPlanSFPA", idPlanSFPA);
