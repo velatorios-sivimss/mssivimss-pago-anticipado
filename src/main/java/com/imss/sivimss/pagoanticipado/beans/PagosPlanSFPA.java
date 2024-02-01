@@ -186,7 +186,7 @@ public class PagosPlanSFPA {
                 " 0.0 AS deudasPasadas, " +
                 " 0.0 AS pagosRealizados " +
                 " FROM SVC_BITACORA_PAGO_ANTICIPADO sps " +
-                " JOIN svt_pago_sfpa sps2 ON " +
+                " JOIN SVT_PAGO_SFPA sps2 ON " +
                 "  sps2.ID_PAGO_SFPA = sps.ID_PAGO_SFPA " +
                 " WHERE sps2.ID_PLAN_SFPA = ?  " +
                 " AND sps.IND_ACTIVO = 1  " +
