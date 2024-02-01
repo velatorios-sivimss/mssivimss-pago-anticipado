@@ -51,7 +51,7 @@ public class PagoAnticipadoSFPAImpl implements PagoAnticipadoSFPAService {
 
     @Value("${data.msit_REPORTE_PA}")
     private String reportePa;
-    
+
     @Value("${data.msit_REPORTE_RECIBO}")
     private String reporteReciboPago;
 
@@ -233,7 +233,7 @@ public class PagoAnticipadoSFPAImpl implements PagoAnticipadoSFPAService {
         }
 
     }
-    
+
     @Override
     public Response<Object> verDetallePagos(DatosRequest request, Authentication authentication)
             throws SQLException, IOException {
@@ -435,12 +435,12 @@ public class PagoAnticipadoSFPAImpl implements PagoAnticipadoSFPAService {
         totalParcialidades = datos.get("totalParcialidades").asInt();
         idPrimerParcialidad = datos.get("idPrimerParcialidad").asInt();
         idUltimaParcialidad = datos.get("idUltimaParcialidad").asInt();
-        
+
         ResultSet rs2 = null;
         try {
             connection = database.getConnection();
             statement = connection.createStatement();
-            
+
             // desactiva pago bitacora
             String consulta = pagosPlanSFPA.desactivarPagoBitacora();
 
@@ -453,89 +453,86 @@ public class PagoAnticipadoSFPAImpl implements PagoAnticipadoSFPAService {
             log.info("Desactivar parcialidad {}", consulta);
 
             // cambiar estatus cuando te pagan a un 1 parcialidad
-            
+
             if (idPagoParcialidad.equals(idPrimerParcialidad) && totalParcialidades.equals(0)) {
-				// buscar pagos bitacora
+                // buscar pagos bitacora
                 // cambiar estatus parcialidad
-			    consulta = pagosPlanSFPA.actualizaEstatusPagoSFPA();
-			    preparedStatement = connection.prepareStatement(consulta);
+                consulta = pagosPlanSFPA.actualizaEstatusPagoSFPA();
+                preparedStatement = connection.prepareStatement(consulta);
 
-			    preparedStatement.setInt(1, 8);
-			    preparedStatement.setInt(2, usuario.getIdUsuario());
-			    preparedStatement.setInt(3, idPagoParcialidad);
-			    preparedStatement.setInt(4, idPlan);
+                preparedStatement.setInt(1, 8);
+                preparedStatement.setInt(2, usuario.getIdUsuario());
+                preparedStatement.setInt(3, idPagoParcialidad);
+                preparedStatement.setInt(4, idPlan);
 
-			    preparedStatement.executeUpdate();
-			         // cambiar estaus plan
-			    consulta = pagosPlanSFPA.actualizaEstatusPlan();
-			    log.info("Desactivar parcialidad {}", consulta);
-			    preparedStatement = connection.prepareStatement(consulta);
+                preparedStatement.executeUpdate();
+                // cambiar estaus plan
+                consulta = pagosPlanSFPA.actualizaEstatusPlan();
+                log.info("Desactivar parcialidad {}", consulta);
+                preparedStatement = connection.prepareStatement(consulta);
 
-			    preparedStatement.setInt(1, 1);
-			    preparedStatement.setInt(2, usuario.getIdUsuario());
-			    preparedStatement.setInt(3, idPlan);
-			    preparedStatement.executeUpdate();
+                preparedStatement.setInt(1, 1);
+                preparedStatement.setInt(2, usuario.getIdUsuario());
+                preparedStatement.setInt(3, idPlan);
+                preparedStatement.executeUpdate();
 
-			}
-            
-            if (idPagoParcialidad.equals(idPrimerParcialidad) 
-            		&& !totalParcialidades.equals(0)) {
-            	 // cambiar estatus parcialidad
-			    consulta = pagosPlanSFPA.actualizaEstatusPagoSFPA();
-			    preparedStatement = connection.prepareStatement(consulta);
+            }
 
-			    preparedStatement.setInt(1, 8);
-			    preparedStatement.setInt(2, usuario.getIdUsuario());
-			    preparedStatement.setInt(3, idPagoParcialidad);
-			    preparedStatement.setInt(4, idPlan);
-			    preparedStatement.executeUpdate();
-			         // cambiar estaus plan
-			    consulta = pagosPlanSFPA.actualizaEstatusPlan();
-			    log.info("Desactivar parcialidad {}", consulta);
-			    preparedStatement = connection.prepareStatement(consulta);
+            if (idPagoParcialidad.equals(idPrimerParcialidad)
+                    && !totalParcialidades.equals(0)) {
+                // cambiar estatus parcialidad
+                consulta = pagosPlanSFPA.actualizaEstatusPagoSFPA();
+                preparedStatement = connection.prepareStatement(consulta);
 
-			    preparedStatement.setInt(1, 1);
-			    preparedStatement.setInt(2, usuario.getIdUsuario());
-			    preparedStatement.setInt(3, idPlan);
-			    preparedStatement.executeUpdate();
+                preparedStatement.setInt(1, 8);
+                preparedStatement.setInt(2, usuario.getIdUsuario());
+                preparedStatement.setInt(3, idPagoParcialidad);
+                preparedStatement.setInt(4, idPlan);
+                preparedStatement.executeUpdate();
+                // cambiar estaus plan
+                consulta = pagosPlanSFPA.actualizaEstatusPlan();
+                log.info("Desactivar parcialidad {}", consulta);
+                preparedStatement = connection.prepareStatement(consulta);
 
-				
-			}else if(idPagoParcialidad.equals(idUltimaParcialidad) && !totalParcialidades.equals(0)) {
-				 // cambiar estatus parcialidad
-			    consulta = pagosPlanSFPA.actualizaEstatusPagoSFPA();
-			    preparedStatement = connection.prepareStatement(consulta);
+                preparedStatement.setInt(1, 1);
+                preparedStatement.setInt(2, usuario.getIdUsuario());
+                preparedStatement.setInt(3, idPlan);
+                preparedStatement.executeUpdate();
 
-			    preparedStatement.setInt(1, 8);
-			    preparedStatement.setInt(2, usuario.getIdUsuario());
-			    preparedStatement.setInt(3, idPagoParcialidad);
-			    preparedStatement.setInt(4, idPlan);
+            } else if (idPagoParcialidad.equals(idUltimaParcialidad) && !totalParcialidades.equals(0)) {
+                // cambiar estatus parcialidad
+                consulta = pagosPlanSFPA.actualizaEstatusPagoSFPA();
+                preparedStatement = connection.prepareStatement(consulta);
 
-			    preparedStatement.executeUpdate();
-			         // cambiar estaus plan
-			    consulta = pagosPlanSFPA.actualizaEstatusPlan();
-			    log.info("Desactivar parcialidad {}", consulta);
-			    preparedStatement = connection.prepareStatement(consulta);
+                preparedStatement.setInt(1, 8);
+                preparedStatement.setInt(2, usuario.getIdUsuario());
+                preparedStatement.setInt(3, idPagoParcialidad);
+                preparedStatement.setInt(4, idPlan);
 
-			    preparedStatement.setInt(1, 2);
-			    preparedStatement.setInt(2, usuario.getIdUsuario());
-			    preparedStatement.setInt(3, idPlan);
-			    preparedStatement.executeUpdate();
-			}else if(!totalParcialidades.equals(0)) {
-				 // cambiar estatus parcialidad
-			    consulta = pagosPlanSFPA.actualizaEstatusPagoSFPA();
-			    preparedStatement = connection.prepareStatement(consulta);
+                preparedStatement.executeUpdate();
+                // cambiar estaus plan
+                consulta = pagosPlanSFPA.actualizaEstatusPlan();
+                log.info("Desactivar parcialidad {}", consulta);
+                preparedStatement = connection.prepareStatement(consulta);
 
-			    preparedStatement.setInt(1, 8);
-			    preparedStatement.setInt(2, usuario.getIdUsuario());
-			    preparedStatement.setInt(3, idPagoParcialidad);
-			    preparedStatement.setInt(4, idPlan);
+                preparedStatement.setInt(1, 2);
+                preparedStatement.setInt(2, usuario.getIdUsuario());
+                preparedStatement.setInt(3, idPlan);
+                preparedStatement.executeUpdate();
+            } else if (!totalParcialidades.equals(0)) {
+                // cambiar estatus parcialidad
+                consulta = pagosPlanSFPA.actualizaEstatusPagoSFPA();
+                preparedStatement = connection.prepareStatement(consulta);
 
-			    preparedStatement.executeUpdate();
-			}
-           
+                preparedStatement.setInt(1, 8);
+                preparedStatement.setInt(2, usuario.getIdUsuario());
+                preparedStatement.setInt(3, idPagoParcialidad);
+                preparedStatement.setInt(4, idPlan);
+
+                preparedStatement.executeUpdate();
+            }
+
             response = new Response<>(false, 200, AppConstantes.EXITO);
-
-         
 
         } catch (Exception e) {
             log.error(AppConstantes.ERROR_QUERY.concat(AppConstantes.ERROR_CONSULTAR));
@@ -868,7 +865,7 @@ public class PagoAnticipadoSFPAImpl implements PagoAnticipadoSFPAService {
 
                 }
 
-                if (deudaMensualActual == 0.0 && (deudasPasadas - pagosRealizados) == 0.0) {
+                if (deudaMensualActual == 0.0 && (pagosRealizados) == 0.0) {
                     return 0.0;
                 } else if (deudaMensualActual > 0) {
                     if ((deudaMensualActual - mensualidad) > mensualidad && (deudasPasadas - pagosRealizados) > 0) {
@@ -937,68 +934,68 @@ public class PagoAnticipadoSFPAImpl implements PagoAnticipadoSFPAService {
             return valor;
         }
     }
-    
+
     private void actualizarFolioPago(Integer idPagoSFPA, Integer idPlan, Integer idUsuario) throws SQLException {
-   	 String actualizaEstatusPagoSFPA = pagosPlanSFPA.actualizaFolioReciboPagoPlan();
+        String actualizaEstatusPagoSFPA = pagosPlanSFPA.actualizaFolioReciboPagoPlan();
         log.info("actualizarFolioPago  {}", actualizaEstatusPagoSFPA);
         preparedStatement = connection.prepareStatement(actualizaEstatusPagoSFPA);
         preparedStatement.setInt(1, idUsuario);
         preparedStatement.setInt(2, idPagoSFPA);
         preparedStatement.setInt(3, idPlan);
         preparedStatement.executeUpdate();
-   }
+    }
 
-	@Override
-	public Response<?> descargarReporteReciboPago(DatosRequest request, Authentication authentication)
-			throws IOException, ParseException {
-		 ObjectMapper mapper = new ObjectMapper();
-		 JsonNode datos = mapper.readTree(request.getDatos().get(AppConstantes.DATOS)
-                 .toString());
-         Integer idPagoSfpa = datos.get("idPagoSfpa").asInt();
-         String parcialidad = datos.get("parcialidad").asText();
-         String importeRecibo = datos.get("importeRecibo").asText();
-		 return providerRestTemplate.consumirServicioReportes(generarDatosReporteReciboPago(idPagoSfpa,parcialidad,importeRecibo), urlReportes,
-	                authentication);
-	}
-	
-	
-	private Map<String, Object> generarDatosReporteReciboPago(Integer idPagoSfpa, String parcialidad, String importeRecibo) {
+    @Override
+    public Response<?> descargarReporteReciboPago(DatosRequest request, Authentication authentication)
+            throws IOException, ParseException {
+        ObjectMapper mapper = new ObjectMapper();
+        JsonNode datos = mapper.readTree(request.getDatos().get(AppConstantes.DATOS)
+                .toString());
+        Integer idPagoSfpa = datos.get("idPagoSfpa").asInt();
+        String parcialidad = datos.get("parcialidad").asText();
+        String importeRecibo = datos.get("importeRecibo").asText();
+        return providerRestTemplate.consumirServicioReportes(
+                generarDatosReporteReciboPago(idPagoSfpa, parcialidad, importeRecibo), urlReportes,
+                authentication);
+    }
+
+    private Map<String, Object> generarDatosReporteReciboPago(Integer idPagoSfpa, String parcialidad,
+            String importeRecibo) {
         Map<String, Object> datosPdf = new HashMap<>();
-        NumeroLetras numeroLetras= new NumeroLetras();
-        BigDecimal bigDecimal= new BigDecimal(importeRecibo);
+        NumeroLetras numeroLetras = new NumeroLetras();
+        BigDecimal bigDecimal = new BigDecimal(importeRecibo);
         datosPdf.put("rutaNombreReporte", reporteReciboPago);
         datosPdf.put("tipoReporte", "pdf");
         datosPdf.put("idParcialidad", idPagoSfpa);
         datosPdf.put("numeroParcialidad", parcialidad);
-        datosPdf.put("importeTexto", numeroLetras.Convertir(bigDecimal.toString(),true));
+        datosPdf.put("importeTexto", numeroLetras.Convertir(bigDecimal.toString(), true));
         return datosPdf;
     }
 
-	@Override
-	public Response<?> descargarReportePagosParcialidades(DatosRequest request, Authentication authentication)
-			throws IOException, ParseException {
-		 ObjectMapper mapper = new ObjectMapper();
-		 JsonNode datos = mapper.readTree(request.getDatos().get(AppConstantes.DATOS)
-                 .toString());
-		 String folio=datos.get("folio").asText();
-		 String nombreContratante=datos.get("nombreContratante").asText();
-		 String tipoReporte=datos.get("tipoReporte").asText();
-		 Integer idPlanSFPA=datos.get("idPlanSFPA").asInt();
-		 Map<String, Object>parametros= new HashMap<>();
-		 
-		 if(tipoReporte.equals("xls")) {
-			 parametros.put("IS_IGNORE_PAGINATION", true);
-		 }
-		 
-		 parametros.put("folio", folio);
-		 parametros.put("nombreContratante", nombreContratante);
-		 parametros.put("idPlanSFPA", idPlanSFPA);
-		 parametros.put("rutaNombreReporte", reportePagoParcialidades);
-		 parametros.put("tipoReporte", tipoReporte);
-		 return providerRestTemplate.consumirServicioReportes(parametros, urlReportes,
-	                authentication);
-		 
-	}
+    @Override
+    public Response<?> descargarReportePagosParcialidades(DatosRequest request, Authentication authentication)
+            throws IOException, ParseException {
+        ObjectMapper mapper = new ObjectMapper();
+        JsonNode datos = mapper.readTree(request.getDatos().get(AppConstantes.DATOS)
+                .toString());
+        String folio = datos.get("folio").asText();
+        String nombreContratante = datos.get("nombreContratante").asText();
+        String tipoReporte = datos.get("tipoReporte").asText();
+        Integer idPlanSFPA = datos.get("idPlanSFPA").asInt();
+        Map<String, Object> parametros = new HashMap<>();
 
+        if (tipoReporte.equals("xls")) {
+            parametros.put("IS_IGNORE_PAGINATION", true);
+        }
+
+        parametros.put("folio", folio);
+        parametros.put("nombreContratante", nombreContratante);
+        parametros.put("idPlanSFPA", idPlanSFPA);
+        parametros.put("rutaNombreReporte", reportePagoParcialidades);
+        parametros.put("tipoReporte", tipoReporte);
+        return providerRestTemplate.consumirServicioReportes(parametros, urlReportes,
+                authentication);
+
+    }
 
 }
