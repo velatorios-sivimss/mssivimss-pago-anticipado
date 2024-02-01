@@ -148,10 +148,10 @@ public class PagosPlanSFPA {
                 .innerJoin("SVC_CONTRATANTE  c", "c.ID_CONTRATANTE = ps.ID_TITULAR")
                 .innerJoin("SVC_PERSONA    pr", "pr.ID_PERSONA = c.ID_PERSONA")
                 .innerJoin("SVT_PAGO_SFPA   psf", "psf.ID_PLAN_SFPA = ps.ID_PLAN_SFPA")
-                .and("PSF.IND_ACTIVO = 1")
+                .and("psf.IND_ACTIVO = 1")
                 .leftJoin("SVC_BITACORA_PAGO_ANTICIPADO  bp", "bp.ID_PAGO_SFPA = psf.ID_PAGO_SFPA")
                 .and("bp.IND_ACTIVO = 1")
-                .where(" PS.ID_PLAN_SFPA = ? ");
+                .where("ps.ID_PLAN_SFPA = ? ");
 
         query = selectQuery.build();
         return query;
