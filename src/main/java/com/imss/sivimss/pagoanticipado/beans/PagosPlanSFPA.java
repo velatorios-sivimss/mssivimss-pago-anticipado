@@ -45,8 +45,9 @@ public class PagosPlanSFPA {
                 " FROM SVT_PAGO_SFPA sps" +
                 " JOIN SVC_BITACORA_PAGO_ANTICIPADO bpaa ON bpaa.ID_PAGO_SFPA= sps.ID_PAGO_SFPA " +
                 " AND bpaa.IND_ACTIVO = 1  " +
-                " WHERE sps.IND_ACTIVO = 1 AND sps.ID_PLAN_SFPA = ps.ID_PLAN_SFPA) AS importePagadoBitacora, ps.IMP_MONTO_MENSUAL, "+
-                " IFNULL(ps.REF_FOLIO_RECIBO,'') as folioRecibo "+
+                " WHERE sps.IND_ACTIVO = 1 AND sps.ID_PLAN_SFPA = ps.ID_PLAN_SFPA) AS importePagadoBitacora, ps.IMP_MONTO_MENSUAL, "
+                +
+                " IFNULL(ps.REF_FOLIO_RECIBO,'') as folioRecibo " +
                 " FROM SVT_PAGO_SFPA ps " +
                 " JOIN SVT_PLAN_SFPA pls ON pls.ID_PLAN_SFPA = ps.ID_PLAN_SFPA " +
                 " JOIN SVC_VELATORIO v ON v.ID_VELATORIO = pls.ID_VELATORIO " +
@@ -63,29 +64,26 @@ public class PagosPlanSFPA {
         SelectQueryUtil selectQueryUtilTotalParcialidades = new SelectQueryUtil();
         SelectQueryUtil selectQueryUtilPrimerParcialidad = new SelectQueryUtil();
         SelectQueryUtil selectQueryUtilUltimaParcialidad = new SelectQueryUtil();
-        
-        
+
         selectQueryUtilTotalParcialidades.select("COUNT(PA.ID_PLAN_SFPA)")
-        .from("SVT_PAGO_SFPA PA")
-        .where("PA.ID_PLAN_SFPA=SPS.ID_PLAN_SFPA");
-        
+                .from("SVT_PAGO_SFPA PA")
+                .where("PA.ID_PLAN_SFPA=SPS.ID_PLAN_SFPA");
+
         selectQueryUtilPrimerParcialidad
-        .select("MIN(PA.ID_PAGO_SFPA)")
-        .from("SVT_PAGO_SFPA PA")
-        .where("PA.ID_PLAN_SFPA=SPS.ID_PLAN_SFPA");
+                .select("MIN(PA.ID_PAGO_SFPA)")
+                .from("SVT_PAGO_SFPA PA")
+                .where("PA.ID_PLAN_SFPA=SPS.ID_PLAN_SFPA");
 
         selectQueryUtilUltimaParcialidad
-        .select("MAX(PA.ID_PAGO_SFPA)")
-        .from("SVT_PAGO_SFPA PA")
-        .where("PA.ID_PLAN_SFPA=SPS.ID_PLAN_SFPA");
-        
-        
-        
+                .select("MAX(PA.ID_PAGO_SFPA)")
+                .from("SVT_PAGO_SFPA PA")
+                .where("PA.ID_PLAN_SFPA=SPS.ID_PLAN_SFPA");
+
         SelectQueryUtil selectQuery = new SelectQueryUtil();
         selectQueryUtil
                 .select("SBPA.ID_BITACORA_PAGO AS idBitacora",
-                		"SPS.ID_PLAN_SFPA AS idPlan",
-                		"SBPA.ID_PAGO_SFPA AS idPagoParcialidad",
+                        "SPS.ID_PLAN_SFPA AS idPlan",
+                        "SBPA.ID_PAGO_SFPA AS idPagoParcialidad",
                         "SBPA.IND_ACTIVO  AS idEstatus",
                         "SBPA.FEC_ALTA AS fechaPago",
                         "SBPA.IMP_PAGO AS importePago",
@@ -99,10 +97,10 @@ public class PagosPlanSFPA {
                         "SBPA.IMP_AUTORIZADO_VALE_PARITARIO AS importeValeParitario",
                         "CASE WHEN SBPA.IND_ACTIVO = 1 THEN 'Pagado'" +
                                 "ELSE 'Cancelado' END AS estatus",
-                                "CASE WHEN ("+selectQueryUtilTotalParcialidades.build()+") = 1 "+
+                        "CASE WHEN (" + selectQueryUtilTotalParcialidades.build() + ") = 1 " +
                                 "then 0 else 1 end AS totalParcialidades",
-                                "("+selectQueryUtilPrimerParcialidad.build()+") AS idPrimerParcialidad",
-                                "("+selectQueryUtilUltimaParcialidad.build()+") AS idUltimaParcialidad")
+                        "(" + selectQueryUtilPrimerParcialidad.build() + ") AS idPrimerParcialidad",
+                        "(" + selectQueryUtilUltimaParcialidad.build() + ") AS idUltimaParcialidad")
                 .from("SVC_BITACORA_PAGO_ANTICIPADO SBPA ")
                 .innerJoin("SVT_PAGO_SFPA SPS", "SBPA.ID_PAGO_SFPA = SPS.ID_PAGO_SFPA")
                 .innerJoin("SVC_METODO_PAGO SMP", "SBPA.ID_METODO_PAGO = SMP.ID_METODO_PAGO")
@@ -127,8 +125,6 @@ public class PagosPlanSFPA {
         log.info(query);
         return query;
     }
-    
-    
 
     public String detallePlan() {
         SelectQueryUtil selectQuery = new SelectQueryUtil();
@@ -194,7 +190,7 @@ public class PagosPlanSFPA {
                 " UNION ALL " +
                 " SELECT 0 AS deudaMensualActual, " +
                 " CAST(IFNULL(SUM(sps.IMP_MONTO_MENSUAL),0.0) AS DOUBLE) AS deudasPasadas,  " +
-                " sps.IMP_MONTO_MENSUAL AS pagosRealizados " +
+                " ifnull(sps.IMP_MONTO_MENSUAL,0.0) AS pagosRealizados " +
                 " FROM SVT_PAGO_SFPA sps " +
                 " LEFT JOIN SVC_BITACORA_PAGO_ANTICIPADO bpaa  " +
                 " ON bpaa.ID_PAGO_SFPA = sps.ID_PAGO_SFPA " +
@@ -206,13 +202,13 @@ public class PagosPlanSFPA {
                 "  UNION ALL " +
                 " SELECT 0.0 AS deudaMensualActual, " +
                 " 0.0 AS deudasPasadas,  " +
-                " CAST(IFNULL(SUM(bpaa.IMP_PAGO),0.0) + ifnull(sum( bpaa.IMP_AUTORIZADO_VALE_PARITARIO), 0)  AS DOUBLE) AS pagosRealizados "
+                " ifnull (ps.IMP_PRECIO - CAST(IFNULL(SUM(bpaa.IMP_PAGO),0.0) + ifnull(sum( bpaa.IMP_AUTORIZADO_VALE_PARITARIO), 0)  AS DOUBLE) ,0.0) AS pagosRealizados "
                 +
                 " FROM SVT_PAGO_SFPA sps " +
                 " JOIN SVC_BITACORA_PAGO_ANTICIPADO bpaa  " +
                 " ON bpaa.ID_PAGO_SFPA = sps.ID_PAGO_SFPA " +
+                "  JOIN SVT_PLAN_SFPA ps ON ps.ID_PLAN_SFPA=  sps.ID_PLAN_SFPA" +
                 " WHERE bpaa.IND_ACTIVO = 1  " +
-
                 " AND sps.ID_PLAN_SFPA = ?  " +
                 "";
     }
@@ -258,22 +254,23 @@ public class PagosPlanSFPA {
                 " WHERE  ID_BITACORA_PAGO = ?" +
                 " AND  ID_PAGO_SFPA = ?";
     }
-    
+
     public String obtenerFolioReciboPagoPlan() {
-    	SelectQueryUtil selectQuery = new SelectQueryUtil();
-    	selectQuery.select(" LPAD((case when ( SELECT COUNT(*) FROM SVT_PAGO_SFPA SPS WHERE REF_FOLIO_RECIBO IS NOT NULL) = 0 "
-    			+ " then 1 else (SELECT COUNT(*)+ 1 FROM SVT_PAGO_SFPA SPS WHERE REF_FOLIO_RECIBO IS NOT NULL ) "
-    			+ " end ),7,'0') ")
-    	.from("DUAL");
-    	query=selectQuery.build();
-    	log.info("{}",query);
+        SelectQueryUtil selectQuery = new SelectQueryUtil();
+        selectQuery.select(
+                " LPAD((case when ( SELECT COUNT(*) FROM SVT_PAGO_SFPA SPS WHERE REF_FOLIO_RECIBO IS NOT NULL) = 0 "
+                        + " then 1 else (SELECT COUNT(*)+ 1 FROM SVT_PAGO_SFPA SPS WHERE REF_FOLIO_RECIBO IS NOT NULL ) "
+                        + " end ),7,'0') ")
+                .from("DUAL");
+        query = selectQuery.build();
+        log.info("{}", query);
         return query;
     }
 
     public String actualizaFolioReciboPagoPlan() {
         return " UPDATE SVT_PAGO_SFPA SET ID_USUARIO_MODIFICA = ?," +
                 " FEC_ACTUALIZACION = CURDATE(), " +
-                " REF_FOLIO_RECIBO = ("+this.obtenerFolioReciboPagoPlan()+")" +
+                " REF_FOLIO_RECIBO = (" + this.obtenerFolioReciboPagoPlan() + ")" +
                 " WHERE ID_PAGO_SFPA =?" +
                 " AND ID_PLAN_SFPA = ?";
     }
