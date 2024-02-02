@@ -258,8 +258,8 @@ public class PagosPlanSFPA {
     public String obtenerFolioReciboPagoPlan() {
         SelectQueryUtil selectQuery = new SelectQueryUtil();
         selectQuery.select(
-                " LPAD((case when ( SELECT COUNT(*) FROM SVT_PAGO_SFPA SPS WHERE REF_FOLIO_RECIBO IS NOT NULL) = 0 "
-                        + " then 1 else (SELECT COUNT(*)+ 1 FROM SVT_PAGO_SFPA SPS WHERE REF_FOLIO_RECIBO IS NOT NULL ) "
+                " LPAD((case when ( SELECT COUNT(SPS.ID_PAGO_SFPA) FROM SVT_PAGO_SFPA SPS WHERE REF_FOLIO_RECIBO IS NOT NULL AND SPS.ID_ESTATUS_PAGO=5) = 0 "
+                        + " then 1 else (SELECT COUNT(SPS.ID_PAGO_SFPA)+ 1 FROM SVT_PAGO_SFPA SPS WHERE REF_FOLIO_RECIBO IS NOT NULL AND SPS.ID_ESTATUS_PAGO=5) "
                         + " end ),7,'0') ")
                 .from("DUAL");
         query = selectQuery.build();
