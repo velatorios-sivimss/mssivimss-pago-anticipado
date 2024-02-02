@@ -26,6 +26,7 @@ import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.text.DecimalFormat;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -962,6 +963,9 @@ public class PagoAnticipadoSFPAImpl implements PagoAnticipadoSFPAService {
         Integer idPagoSfpa = datos.get("idPagoSfpa").asInt();
         String parcialidad = datos.get("parcialidad").asText();
         String importeRecibo = datos.get("importeRecibo").asText();
+        Double importe=Double.valueOf(importeRecibo);
+        DecimalFormat df = new DecimalFormat("#.00"); 
+         importeRecibo=df.format(importe);
         return providerRestTemplate.consumirServicioReportes(
                 generarDatosReporteReciboPago(idPagoSfpa, parcialidad, importeRecibo), urlReportes,
                 authentication);
