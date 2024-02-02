@@ -175,12 +175,14 @@ public class PagoAnticipadoSFPAImpl implements PagoAnticipadoSFPAService {
             Integer estatusPagoSFPA = 8;// 8 estatus por pagar
 
             if (costoRestante == 0 || costoRestante == 0.0) {
+                log.info("costo restante es 0");
                 estatusPagoSFPA = 5;// 5 pagado
                 this.actualizarFolioPago(idPagoSFPA, idPlan, idUsuario);
             }
             if (costoRestante == -1.0)
                 return new Response<>(false, 500, AppConstantes.ERROR_QUERY, null);
 
+            log.info("el estatus de pago es " + estatusPagoSFPA);
             String actualizaEstatusPagoSFPA = pagosPlanSFPA.actualizaEstatusPagoSFPA();
             log.info("actualizar estatus pago  {}", actualizaEstatusPagoSFPA);
             preparedStatement = connection.prepareStatement(actualizaEstatusPagoSFPA);
