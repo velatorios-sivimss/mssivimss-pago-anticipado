@@ -968,7 +968,7 @@ public class PagoAnticipadoSFPAImpl implements PagoAnticipadoSFPAService {
         BigDecimal bigDecimal= new BigDecimal(importeRecibo);
         datosPdf.put("rutaNombreReporte", reporteReciboPago);
         datosPdf.put("tipoReporte", "pdf");
-        datosPdf.put("idParcialidad", idPagoSfpa);
+        datosPdf.put("idPagoSfpa", idPagoSfpa);
         datosPdf.put("numeroParcialidad", parcialidad);
         datosPdf.put("importeTexto", numeroLetras.Convertir(bigDecimal.toString(),true));
         return datosPdf;
