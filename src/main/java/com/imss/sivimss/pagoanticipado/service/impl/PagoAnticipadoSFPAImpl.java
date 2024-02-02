@@ -170,6 +170,7 @@ public class PagoAnticipadoSFPAImpl implements PagoAnticipadoSFPAService {
             }
 
             Double costoRestante = validaCosto(connection, idPlan);
+            log.info("El costo restante es {} " + costoRestante);
 
             Integer estatusPagoSFPA = 8;// 8 estatus por pagar
 
@@ -866,7 +867,10 @@ public class PagoAnticipadoSFPAImpl implements PagoAnticipadoSFPAService {
 
                 }
 
-                if (deudaMensualActual == 0.0 && (pagosRealizados) == 0.0) {
+                log.info("El costo deudaMensualActual es  " + deudaMensualActual);
+                log.info("El costo mensual es  " + deudasPasadas);
+                log.info("El costo pagosRealizado es  " + pagosRealizados);
+                if ((pagosRealizados) == 0.0 || (pagosRealizados) == 0) {
                     return 0.0;
                 } else if (deudaMensualActual > 0) {
                     if ((deudaMensualActual - mensualidad) > mensualidad && (deudasPasadas - pagosRealizados) > 0) {
