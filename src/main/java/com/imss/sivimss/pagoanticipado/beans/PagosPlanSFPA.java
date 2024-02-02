@@ -226,7 +226,7 @@ public class PagosPlanSFPA {
         return "SELECT ifnull(ps.IMP_PRECIO,0) - ifnull(SUM(sps.IMP_MONTO_MENSUAL),0) as total " +
                 "  FROM SVT_PAGO_SFPA sps " +
                 " JOIN SVT_PLAN_SFPA ps ON ps.ID_PLAN_SFPA = sps.ID_PLAN_SFPA" +
-                " where ps.IND_ACTIVO = 1" +
+                " where sps.IND_ACTIVO = 1" +
                 " AND sps.ID_ESTATUS_PAGO = 5" +
                 " ANd ps.ID_PLAN_SFPA = ?";
     }
