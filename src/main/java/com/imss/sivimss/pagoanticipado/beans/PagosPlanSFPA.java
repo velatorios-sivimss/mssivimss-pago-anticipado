@@ -190,7 +190,7 @@ public class PagosPlanSFPA {
                 " UNION ALL " +
                 " SELECT 0 AS deudaMensualActual, " +
                 " CAST(IFNULL(SUM(sps.IMP_MONTO_MENSUAL),0.0) AS DOUBLE) AS deudasPasadas,  " +
-                " sps.IMP_MONTO_MENSUAL AS pagosRealizados " +
+                " ifnull(sps.IMP_MONTO_MENSUAL,0) AS pagosRealizados " +
                 " FROM SVT_PAGO_SFPA sps " +
                 " LEFT JOIN SVC_BITACORA_PAGO_ANTICIPADO bpaa  " +
                 " ON bpaa.ID_PAGO_SFPA = sps.ID_PAGO_SFPA " +
