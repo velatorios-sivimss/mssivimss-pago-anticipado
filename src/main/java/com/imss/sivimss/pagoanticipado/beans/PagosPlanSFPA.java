@@ -223,12 +223,12 @@ public class PagosPlanSFPA {
     }
 
     public String totalPagado() {
-        return "SELECT ifnull(SUM(pa.IMP_PAGO),0)- IFNULL( psf.IMP_PRECIO,0) AS total" +
-                "  FROM SVC_BITACORA_PAGO_ANTICIPADO pa" +
-                " JOIN SVT_PAGO_SFPA ps ON ps.ID_PAGO_SFPA = pa.ID_PAGO_SFPA" +
-                " JOIN SVT_PLAN_SFPA psf ON psf.ID_PLAN_SFPA = ps.ID_PLAN_SFPA" +
-                " WHERE ps.ID_PLAN_SFPA = ?" +
-                " AND pa.IND_ACTIVO= 1";
+        return "SELECT ifnull(ps.IMP_PRECIO,0) - ifnull(SUM(sps.IMP_MONTO_MENSUAL),0) as total " +
+                "  FROM SVT_PAGO_SFPA sps " +
+                " JOIN SVT_PLAN_SFPA ps ON ps.ID_PLAN_SFPA = sps.ID_PLAN_SFPA" +
+                " where pa.IND_ACTIVO = 1" +
+                " AND sps.ID_ESTATUS_PAGO = 5" +
+                " ANd ps.ID_PLAN_SFPA = ?";
     }
 
     public String actualizaEstatusPlan() {
