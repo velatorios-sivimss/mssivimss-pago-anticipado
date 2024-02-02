@@ -847,6 +847,7 @@ public class PagoAnticipadoSFPAImpl implements PagoAnticipadoSFPAService {
             rs = preparedStatement.executeQuery();
 
             int rowCount = rs2.last() ? rs2.getRow() : 0;
+            log.info("numero de columnas " + rowCount);
             if (rowCount > 0) {
                 Integer contador = 0;
                 while (rs.next()) {
@@ -880,6 +881,7 @@ public class PagoAnticipadoSFPAImpl implements PagoAnticipadoSFPAService {
             }
 
         } catch (Exception e) {
+            log.info("fallo el query entro al catch");
             log.error(AppConstantes.ERROR_QUERY);
             log.error(e.getMessage());
             if (connection != null)
