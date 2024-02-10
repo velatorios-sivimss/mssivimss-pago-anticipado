@@ -22,7 +22,7 @@ public class PagosPlanSFPA {
                 " WHEN pg.importePagado = pg.importeMensual THEN FALSE " +
                 " ELSE FALSE END AS validaPago,  " +
                 " pg.importePagado , pg.importeMensual , " +
-                " pg.fechaParcialidad , " +
+                " pg.fechaParcialidad as fechaParcialidadSinFormato , " +
                 " CASE WHEN pg.idEstatus = 2 THEN 0 WHEN MONTH(pg.fechaParcialidad) = MONTH(CURDATE()) && ((pg.importeFaltante + pg.importeMensual) - pg.importePagadoBitacora) > 0  "
                 +
                 " THEN (pg.importeFaltante + pg.importeMensual) - pg.importePagadoBitacora " +
