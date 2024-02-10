@@ -85,7 +85,7 @@ public class PagosPlanSFPA {
                         "SPS.ID_PLAN_SFPA AS idPlan",
                         "SBPA.ID_PAGO_SFPA AS idPagoParcialidad",
                         "SBPA.IND_ACTIVO  AS idEstatus",
-                        "SBPA.FEC_ALTA AS fechaPago",
+                        "DATE_FORMAT(SBPA.FEC_ALTA,'%d/%m/%Y') AS fechaPago",
                         "SBPA.IMP_PAGO AS importePago",
                         "SBPA.ID_METODO_PAGO as idMetodoPago",
                         "SMP.DES_METODO_PAGO AS desMetodoPago",
