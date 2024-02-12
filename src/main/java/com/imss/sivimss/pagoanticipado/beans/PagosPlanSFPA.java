@@ -31,6 +31,10 @@ public class PagosPlanSFPA {
                                 " when pg.importeMensual - pg.importePagado  > 0 " +
                                 " then  pg.importeMensual - pg.importePagado " +
                                 " ELSE pg.importeMensual END AS importeAcumulado, pg.folioRecibo " +
+                                "( SELECT GROUP_CONCAT(sm.DES_METODO_PAGO) " +
+                                "FROM SVC_BITACORA_PAGO_ANTICIPADO bp" +
+                                "INNER JOIN SVC_METODO_PAGO sm ON bp.ID_METODO_PAGO = sm.ID_METODO_PAGO" +
+                                " WHERE bp.IND_ACTIVO = 1 AND bp.ID_PAGO_SFPA = pg.idPagoSFPA) AS metodoPago " +
                                 " FROM ( " +
                                 " SELECT ps.ID_PAGO_SFPA AS idPagoSFPA, ps.ID_PLAN_SFPA AS idPlanSFPA,ps.ID_ESTATUS_PAGO AS idEstatus, v.DES_VELATORIO AS velatorio, ps.FEC_PARCIALIDAD AS fechaParcialidad, ps.IMP_MONTO_MENSUAL AS importeMensual, ep.DES_ESTATUS_PAGO_ANTICIPADO AS estatusPago, ( "
                                 +
