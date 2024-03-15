@@ -108,6 +108,11 @@ public class PagosPlanSFPA {
                                                 + "		END AS numFolio ",
                                                 "DATE_FORMAT(SBPA.FEC_VALE_PARITARIO,'%d/%m/%Y') AS fechaValeParitario",
                                                 "SBPA.IMP_AUTORIZADO_VALE_PARITARIO AS importeValeParitario",
+                                                "CASE WHEN SBPA.IMP_PAGO IS NOT NULL\r\n"
+                                                + "		THEN CONCAT('$', FORMAT(SBPA.IMP_PAGO,2)) "
+                                                + "		WHEN SBPA.IMP_AUTORIZADO_VALE_PARITARIO IS NOT NULL "
+                                                + "		THEN  CONCAT('$', FORMAT(SBPA.IMP_AUTORIZADO_VALE_PARITARIO,2)) "
+                                                + "		ELSE '' END AS importeTotal",
                                                 "CASE WHEN SBPA.IND_ACTIVO = 1 THEN 'Pagado'" +
                                                                 "ELSE 'Cancelado' END AS estatus",
                                                 "CASE WHEN (" + selectQueryUtilTotalParcialidades.build() + ") = 1 " +
