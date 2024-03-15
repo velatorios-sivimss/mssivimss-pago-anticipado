@@ -100,6 +100,12 @@ public class PagosPlanSFPA {
                                                 "SBPA.REF_FOLIO_AUTORIZACION AS folioAutorizacion",
                                                 "SBPA.REF_BANCO AS referenciaBancaria",
                                                 "SBPA.NUM_VALE_PARITARIO AS numeroValeParitario",
+                                                "CASE WHEN SBPA.REF_FOLIO_AUTORIZACION IS NULL OR SBPA.REF_FOLIO_AUTORIZACION = '' "
+                                                + "		THEN "
+                                                + "				SBPA.NUM_VALE_PARITARIO "
+                                                + "		ELSE "
+                                                + "				SBPA.REF_FOLIO_AUTORIZACION "
+                                                + "		END AS numFolio ",
                                                 "DATE_FORMAT(SBPA.FEC_VALE_PARITARIO,'%d/%m/%Y') AS fechaValeParitario",
                                                 "SBPA.IMP_AUTORIZADO_VALE_PARITARIO AS importeValeParitario",
                                                 "CASE WHEN SBPA.IND_ACTIVO = 1 THEN 'Pagado'" +
