@@ -242,11 +242,11 @@ public class PagoAnticipadoSFPAImpl implements PagoAnticipadoSFPAService {
             preparedStatement.setInt(1, estatusPlan);
             preparedStatement.setInt(2, idUsuario);
             preparedStatement.setInt(3, idPlan);
-            consultaAnterior = consultaDatos(" SVT_PLAN_SFPA ", "ID_PLAN_SFPA=" + idPagoSFPA,
+            consultaAnterior = consultaDatos(" SVT_PLAN_SFPA ", "ID_PLAN_SFPA=" + idPlan,
                     connection);
 
             Integer actualizaEsatus2 = preparedStatement.executeUpdate();
-            consultaNueva = consultaDatos(" SVT_PLAN_SFPA ", "ID_PLAN_SFPA=" + idPagoSFPA,
+            consultaNueva = consultaDatos(" SVT_PLAN_SFPA ", "ID_PLAN_SFPA=" + idPlan,
                     connection);
             insertaBitacora("SVT_PLAN_SFPA ", 2, consultaAnterior, consultaNueva, idUsuario, connection);
 
