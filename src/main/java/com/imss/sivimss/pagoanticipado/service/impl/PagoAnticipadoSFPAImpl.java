@@ -957,6 +957,8 @@ public class PagoAnticipadoSFPAImpl implements PagoAnticipadoSFPAService {
     @Override
     public Response<?> descargarReporteReciboPago(DatosRequest request, Authentication authentication)
             throws IOException, ParseException {
+        UsuarioDto usuarioDto = json.fromJson((String) authentication.getPrincipal(), UsuarioDto.class);
+
         ObjectMapper mapper = new ObjectMapper();
         JsonNode datos = mapper.readTree(request.getDatos().get(AppConstantes.DATOS)
                 .toString());
@@ -967,17 +969,18 @@ public class PagoAnticipadoSFPAImpl implements PagoAnticipadoSFPAService {
         DecimalFormat df = new DecimalFormat("#.00"); 
          importeRecibo=df.format(importe);
         return providerRestTemplate.consumirServicioReportes(
-                generarDatosReporteReciboPago(idPagoSfpa, parcialidad, importeRecibo), urlReportes,
+                generarDatosReporteReciboPago(idPagoSfpa, parcialidad, importeRecibo,usuarioDto.getNombre()), urlReportes,
                 authentication);
     }
 
     private Map<String, Object> generarDatosReporteReciboPago(Integer idPagoSfpa, String parcialidad,
-            String importeRecibo) {
+            String importeRecibo, String usuario) {
         Map<String, Object> datosPdf = new HashMap<>();
         NumeroLetras numeroLetras = new NumeroLetras();
         BigDecimal bigDecimal = new BigDecimal(importeRecibo);
         datosPdf.put("rutaNombreReporte", reporteReciboPago);
         datosPdf.put("tipoReporte", "pdf");
+        datosPdf.put("usuario", usuario);
         datosPdf.put("idPagoSfpa", idPagoSfpa);
         datosPdf.put("numeroParcialidad", parcialidad);
         datosPdf.put("importeTexto", numeroLetras.Convertir(bigDecimal.toString(), true));
