@@ -1112,11 +1112,12 @@ public class PagoAnticipadoSFPAImpl implements PagoAnticipadoSFPAService {
         Integer idPagoSfpa = datos.get("idPagoSfpa").asInt();
         String parcialidad = datos.get("parcialidad").asText();
         String importeRecibo = datos.get("importeRecibo").asText();
+        String usuario = usuarioDto.getNombre();
         Double importe = Double.valueOf(importeRecibo);
         DecimalFormat df = new DecimalFormat("#.00");
         importeRecibo = df.format(importe);
         return providerRestTemplate.consumirServicioReportes(
-                generarDatosReporteReciboPago(idPagoSfpa, parcialidad, importeRecibo,usuarioDto.getNombre()), urlReportes,
+                generarDatosReporteReciboPago(idPagoSfpa, parcialidad, importeRecibo,usuario), urlReportes,
                 authentication);
     }
 
@@ -1127,7 +1128,7 @@ public class PagoAnticipadoSFPAImpl implements PagoAnticipadoSFPAService {
         BigDecimal bigDecimal = new BigDecimal(importeRecibo);
         datosPdf.put("rutaNombreReporte", reporteReciboPago);
         datosPdf.put("tipoReporte", "pdf");
-        datosPdf.put("usuario", usuario);
+        datosPdf.put("usuario", usuario.equals("")?"":usuario);
         datosPdf.put("idPagoSfpa", idPagoSfpa);
         datosPdf.put("numeroParcialidad", parcialidad);
         datosPdf.put("importeTexto", numeroLetras.Convertir(bigDecimal.toString(), true));
