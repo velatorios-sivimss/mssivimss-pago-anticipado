@@ -138,7 +138,8 @@ public class PagoAnticipadoSFPAImpl implements PagoAnticipadoSFPAService {
             String fechaValeParitaria = setValor(datos.get("fechaValeParitaria").asText());
             BigDecimal importeValeParitaria = new BigDecimal(datos.get("importeValeParitaria").asDouble());
             log.info("request {}", datos);
-
+            String consultaAnterior = "";
+            String consultaNueva = "";
             String insertarPagoBitagoraSFPA = pagosPlanSFPA.insertarPagoBitagoraSFPA();
             connection = database.getConnection();
             log.info("Insertar bitacora  {}", insertarPagoBitagoraSFPA);
@@ -162,12 +163,23 @@ public class PagoAnticipadoSFPAImpl implements PagoAnticipadoSFPAService {
 
             int affectedRows = preparedStatement.executeUpdate();
             if (affectedRows == 0) {
+                if (connection != null) {
+                    connection.close();
+                }
+
+                if (rs != null) {
+                    rs.close();
+                }
                 throw new SQLException("No se pudo guardar");
             }
             Integer idBitacora = 0;
             rs = preparedStatement.getGeneratedKeys();
             if (rs.next()) {
                 idBitacora = rs.getInt(1);
+                consultaAnterior = consultaDatos(" SVC_BITACORA_PAGO_ANTICIPADO ", "ID_BITACORA_PAGO=" + idBitacora,
+                        connection);
+                insertaBitacora("SVC_BITACORA_PAGO_ANTICIPADO ", 1, null, consultaAnterior, idUsuario, connection);
+
             }
 
             Double costoRestante = validaCosto(connection, idPlan);
@@ -180,8 +192,16 @@ public class PagoAnticipadoSFPAImpl implements PagoAnticipadoSFPAService {
                 estatusPagoSFPA = 5;// 5 pagado
                 this.actualizarFolioPago(idPagoSFPA, idPlan, idUsuario);
             }
-            if (costoRestante == -1.0)
+            if (costoRestante == -1.0) {
+                if (connection != null) {
+                    connection.close();
+                }
+
+                if (rs != null) {
+                    rs.close();
+                }
                 return new Response<>(false, 500, AppConstantes.ERROR_QUERY, null);
+            }
 
             log.info("el estatus de pago es " + estatusPagoSFPA);
             String actualizaEstatusPagoSFPA = pagosPlanSFPA.actualizaEstatusPagoSFPA();
@@ -191,9 +211,25 @@ public class PagoAnticipadoSFPAImpl implements PagoAnticipadoSFPAService {
             preparedStatement.setInt(2, idUsuario);
             preparedStatement.setInt(3, idPagoSFPA);
             preparedStatement.setInt(4, idPlan);
+
+            consultaAnterior = consultaDatos(" SVT_PAGO_SFPA ", "ID_PAGO_SFPA=" + idPagoSFPA,
+                    connection);
+
             Integer actualizaEsatus1 = preparedStatement.executeUpdate();
-            if (actualizaEsatus1 < 1)
+            consultaNueva = consultaDatos(" SVT_PAGO_SFPA ", "ID_PAGO_SFPA=" + idPagoSFPA,
+                    connection);
+            insertaBitacora("SVT_PAGO_SFPA ", 2, consultaAnterior, consultaNueva, idUsuario, connection);
+
+            if (actualizaEsatus1 < 1) {
+                if (connection != null) {
+                    connection.close();
+                }
+
+                if (rs != null) {
+                    rs.close();
+                }
                 throw new SQLException("No se pudo guardar");
+            }
 
             Double total = validaTotalPagado(connection, idPlan);
             Integer estatusPlan = 2;// esatus plan 2 vigente
@@ -206,10 +242,24 @@ public class PagoAnticipadoSFPAImpl implements PagoAnticipadoSFPAService {
             preparedStatement.setInt(1, estatusPlan);
             preparedStatement.setInt(2, idUsuario);
             preparedStatement.setInt(3, idPlan);
+            consultaAnterior = consultaDatos(" SVT_PLAN_SFPA ", "ID_PLAN_SFPA=" + idPlan,
+                    connection);
 
             Integer actualizaEsatus2 = preparedStatement.executeUpdate();
-            if (actualizaEsatus2 < 1)
+            consultaNueva = consultaDatos(" SVT_PLAN_SFPA ", "ID_PLAN_SFPA=" + idPlan,
+                    connection);
+            insertaBitacora("SVT_PLAN_SFPA ", 2, consultaAnterior, consultaNueva, idUsuario, connection);
+
+            if (actualizaEsatus2 < 1) {
+                if (connection != null) {
+                    connection.close();
+                }
+
+                if (rs != null) {
+                    rs.close();
+                }
                 throw new SQLException("No se pudo actualizar");
+            }
 
             connection.commit();
 
@@ -332,6 +382,8 @@ public class PagoAnticipadoSFPAImpl implements PagoAnticipadoSFPAService {
             Integer idMetodoPago = datos.get("idMetodoPago").asInt();
             String valeParitaria = setValor(datos.get("valeParitaria").asText());
             String fechaValeParitaria = setValor(datos.get("fechaValeParitaria").asText());
+            String consultaAnterior = "";
+            String consultaNueva = "";
             BigDecimal importeValeParitaria = BigDecimal.valueOf(datos.get("importeValeParitaria").asDouble());
             log.info("request {}", datos);
             String actualizarPagoBitagoraSFPA = pagosPlanSFPA.actualizarPagoBitagoraSFPA();
@@ -353,27 +405,55 @@ public class PagoAnticipadoSFPAImpl implements PagoAnticipadoSFPAService {
             preparedStatement.setInt(11, idBitacoraPago);
             preparedStatement.setInt(12, idPagoSFPA);
 
+            consultaAnterior = consultaDatos(" SVC_BITACORA_PAGO_ANTICIPADO ", "ID_BITACORA_PAGO=" + idBitacoraPago,
+                    connection);
             preparedStatement.executeUpdate();
-
+            consultaNueva = consultaDatos(" SVC_BITACORA_PAGO_ANTICIPADO ", "ID_BITACORA_PAGO=" + idBitacoraPago,
+                    connection);
+            insertaBitacora("SVC_BITACORA_PAGO_ANTICIPADO ", 2, consultaAnterior, consultaNueva, idUsuario, connection);
             Double costoRestante = validaCosto(connection, idPlan);
             Integer estatusPagoSFPA = 8;// 8 estatus por pagar
             if (costoRestante == 0 || costoRestante == 0.0) {
                 estatusPagoSFPA = 5;// 5 pagado
                 this.actualizarFolioPago(idPagoSFPA, idPlan, idUsuario);
             }
-            if (costoRestante == -1.0)
+            if (costoRestante == -1.0) {
+                if (connection != null) {
+                    connection.close();
+                }
+
+                if (rs != null) {
+                    rs.close();
+                }
                 return new Response<>(false, 500, AppConstantes.ERROR_QUERY, null);
+
+            }
 
             String actualizaEstatusPagoSFPA = pagosPlanSFPA.actualizaEstatusPagoSFPA();
             log.info("actualizar estatus pago  {}", actualizaEstatusPagoSFPA);
+            consultaAnterior = consultaDatos(" SVT_PAGO_SFPA ", "ID_PAGO_SFPA=" + idBitacoraPago,
+                    connection);
+
             preparedStatement = connection.prepareStatement(actualizaEstatusPagoSFPA);
             preparedStatement.setInt(1, estatusPagoSFPA);
             preparedStatement.setInt(2, idUsuario);
             preparedStatement.setInt(3, idPagoSFPA);
             preparedStatement.setInt(4, idPlan);
             Integer actualizaEsatus1 = preparedStatement.executeUpdate();
-            if (actualizaEsatus1 < 1)
+            consultaNueva = consultaDatos(" SVT_PAGO_SFPA ", "ID_PAGO_SFPA=" + idBitacoraPago,
+                    connection);
+            insertaBitacora("SVT_PAGO_SFPA ", 2, consultaAnterior, consultaNueva, idUsuario, connection);
+            if (actualizaEsatus1 < 1) {
+                if (connection != null) {
+                    connection.close();
+                }
+
+                if (rs != null) {
+                    rs.close();
+                }
+
                 throw new SQLException("No se pudo guardar");
+            }
 
             Double total = validaTotalPagado(connection, idPlan);
             Integer estatusPlan = 2;// esatus plan 2 vigente
@@ -386,10 +466,22 @@ public class PagoAnticipadoSFPAImpl implements PagoAnticipadoSFPAService {
             preparedStatement.setInt(1, estatusPlan);
             preparedStatement.setInt(2, idUsuario);
             preparedStatement.setInt(3, idPlan);
-
+            consultaAnterior = consultaDatos(" SVT_PLAN_SFPA ", "ID_PLAN_SFPA=" + idPlan,
+                    connection);
             Integer actualizaEsatus2 = preparedStatement.executeUpdate();
-            if (actualizaEsatus2 < 1)
+            consultaNueva = consultaDatos(" SVT_PLAN_SFPA ", "ID_PLAN_SFPA=" + idPlan,
+                    connection);
+            insertaBitacora("SVT_PLAN_SFPA ", 2, consultaAnterior, consultaNueva, idUsuario, connection);
+            if (actualizaEsatus2 < 1) {
+                if (connection != null) {
+                    connection.close();
+                }
+
+                if (rs != null) {
+                    rs.close();
+                }
                 throw new SQLException("No se pudo actualizar");
+            }
 
             connection.commit();
 
@@ -426,6 +518,7 @@ public class PagoAnticipadoSFPAImpl implements PagoAnticipadoSFPAService {
         ObjectMapper mapper = new ObjectMapper();
         Gson gson = new Gson();
         UsuarioDto usuario = gson.fromJson((String) authentication.getPrincipal(), UsuarioDto.class);
+        Integer idUsuario = usuario.getIdUsuario();
         Integer idPagoBitacora = 0;
         Integer idPagoParcialidad = 0;
         Integer idPlan = 0;
@@ -439,7 +532,8 @@ public class PagoAnticipadoSFPAImpl implements PagoAnticipadoSFPAService {
         totalParcialidades = datos.get("totalParcialidades").asInt();
         idPrimerParcialidad = datos.get("idPrimerParcialidad").asInt();
         idUltimaParcialidad = datos.get("idUltimaParcialidad").asInt();
-
+        String consultaNueva = "";
+        String consultaAnterior = "";
         ResultSet rs2 = null;
         try {
             connection = database.getConnection();
@@ -453,7 +547,12 @@ public class PagoAnticipadoSFPAImpl implements PagoAnticipadoSFPAService {
 
             preparedStatement.setInt(1, usuario.getIdUsuario());
             preparedStatement.setInt(2, idPagoBitacora);
+            consultaAnterior = consultaDatos(" SVC_BITACORA_PAGO_ANTICIPADO ", "ID_BITACORA_PAGO=" + idPagoBitacora,
+                    connection);
             preparedStatement.executeUpdate();
+            consultaNueva = consultaDatos(" SVC_BITACORA_PAGO_ANTICIPADO ", "ID_BITACORA_PAGO=" + idPagoBitacora,
+                    connection);
+            insertaBitacora("SVC_BITACORA_PAGO_ANTICIPADO ", 2, consultaAnterior, consultaNueva, idUsuario, connection);
             log.info("Desactivar parcialidad {}", consulta);
 
             // cambiar estatus cuando te pagan a un 1 parcialidad
@@ -468,8 +567,14 @@ public class PagoAnticipadoSFPAImpl implements PagoAnticipadoSFPAService {
                 preparedStatement.setInt(2, usuario.getIdUsuario());
                 preparedStatement.setInt(3, idPagoParcialidad);
                 preparedStatement.setInt(4, idPlan);
-
+                consultaAnterior = consultaDatos(" SVT_PAGO_SFPA ", "ID_PAGO_SFPA=" + idPagoParcialidad,
+                        connection);
                 preparedStatement.executeUpdate();
+                consultaNueva = consultaDatos(" SVT_PAGO_SFPA ", "ID_PAGO_SFPA=" + idPagoParcialidad,
+                        connection);
+                insertaBitacora("SVT_PAGO_SFPA ", 2, consultaAnterior, consultaNueva, idUsuario,
+                        connection);
+
                 // cambiar estaus plan
                 consulta = pagosPlanSFPA.actualizaEstatusPlan();
                 log.info("Desactivar parcialidad {}", consulta);
@@ -478,7 +583,13 @@ public class PagoAnticipadoSFPAImpl implements PagoAnticipadoSFPAService {
                 preparedStatement.setInt(1, 1);
                 preparedStatement.setInt(2, usuario.getIdUsuario());
                 preparedStatement.setInt(3, idPlan);
+                consultaAnterior = consultaDatos(" SVT_PLAN_SFPA ", "ID_PLAN_SFPA=" + idPlan,
+                        connection);
                 preparedStatement.executeUpdate();
+                consultaNueva = consultaDatos(" SVT_PLAN_SFPA ", "ID_PLAN_SFPA=" + idPlan,
+                        connection);
+                insertaBitacora("SVT_PLAN_SFPA ", 2, consultaAnterior, consultaNueva, idUsuario,
+                        connection);
 
             }
 
@@ -492,7 +603,14 @@ public class PagoAnticipadoSFPAImpl implements PagoAnticipadoSFPAService {
                 preparedStatement.setInt(2, usuario.getIdUsuario());
                 preparedStatement.setInt(3, idPagoParcialidad);
                 preparedStatement.setInt(4, idPlan);
+                consultaAnterior = consultaDatos(" SVT_PAGO_SFPA ", "ID_PAGO_SFPA=" + idPagoParcialidad,
+                        connection);
                 preparedStatement.executeUpdate();
+                consultaNueva = consultaDatos(" SVT_PAGO_SFPA ", "ID_PAGO_SFPA=" + idPagoParcialidad,
+                        connection);
+                insertaBitacora("SVT_PAGO_SFPA ", 2, consultaAnterior, consultaNueva, idUsuario,
+                        connection);
+
                 // cambiar estaus plan
                 consulta = pagosPlanSFPA.actualizaEstatusPlan();
                 log.info("Desactivar parcialidad {}", consulta);
@@ -501,7 +619,14 @@ public class PagoAnticipadoSFPAImpl implements PagoAnticipadoSFPAService {
                 preparedStatement.setInt(1, 1);
                 preparedStatement.setInt(2, usuario.getIdUsuario());
                 preparedStatement.setInt(3, idPlan);
+
+                consultaAnterior = consultaDatos(" SVT_PLAN_SFPA ", "ID_PLAN_SFPA=" + idPlan,
+                        connection);
                 preparedStatement.executeUpdate();
+                consultaNueva = consultaDatos(" SVT_PLAN_SFPA ", "ID_PLAN_SFPA=" + idPlan,
+                        connection);
+                insertaBitacora("SVT_PLAN_SFPA ", 2, consultaAnterior, consultaNueva, idUsuario,
+                        connection);
 
             } else if (idPagoParcialidad.equals(idUltimaParcialidad) && !totalParcialidades.equals(0)) {
                 // cambiar estatus parcialidad
@@ -512,8 +637,13 @@ public class PagoAnticipadoSFPAImpl implements PagoAnticipadoSFPAService {
                 preparedStatement.setInt(2, usuario.getIdUsuario());
                 preparedStatement.setInt(3, idPagoParcialidad);
                 preparedStatement.setInt(4, idPlan);
-
+                consultaAnterior = consultaDatos(" SVT_PAGO_SFPA ", "ID_PAGO_SFPA=" + idPagoParcialidad,
+                        connection);
                 preparedStatement.executeUpdate();
+                consultaNueva = consultaDatos(" SVT_PAGO_SFPA ", "ID_PAGO_SFPA=" + idPagoParcialidad,
+                        connection);
+                insertaBitacora("SVT_PAGO_SFPA ", 2, consultaAnterior, consultaNueva, idUsuario,
+                        connection);
                 // cambiar estaus plan
                 consulta = pagosPlanSFPA.actualizaEstatusPlan();
                 log.info("Desactivar parcialidad {}", consulta);
@@ -522,7 +652,13 @@ public class PagoAnticipadoSFPAImpl implements PagoAnticipadoSFPAService {
                 preparedStatement.setInt(1, 2);
                 preparedStatement.setInt(2, usuario.getIdUsuario());
                 preparedStatement.setInt(3, idPlan);
+                consultaAnterior = consultaDatos(" SVT_PLAN_SFPA ", "ID_PLAN_SFPA=" + idPlan,
+                        connection);
                 preparedStatement.executeUpdate();
+                consultaNueva = consultaDatos(" SVT_PLAN_SFPA ", "ID_PLAN_SFPA=" + idPlan,
+                        connection);
+                insertaBitacora("SVT_PLAN_SFPA ", 2, consultaAnterior, consultaNueva, idUsuario,
+                        connection);
             } else if (!totalParcialidades.equals(0)) {
                 // cambiar estatus parcialidad
                 consulta = pagosPlanSFPA.actualizaEstatusPagoSFPA();
@@ -532,8 +668,13 @@ public class PagoAnticipadoSFPAImpl implements PagoAnticipadoSFPAService {
                 preparedStatement.setInt(2, usuario.getIdUsuario());
                 preparedStatement.setInt(3, idPagoParcialidad);
                 preparedStatement.setInt(4, idPlan);
-
+                consultaAnterior = consultaDatos(" SVT_PAGO_SFPA ", "ID_PAGO_SFPA=" + idPagoParcialidad,
+                        connection);
                 preparedStatement.executeUpdate();
+                consultaNueva = consultaDatos(" SVT_PAGO_SFPA ", "ID_PAGO_SFPA=" + idPagoParcialidad,
+                        connection);
+                insertaBitacora("SVT_PAGO_SFPA ", 2, consultaAnterior, consultaNueva, idUsuario,
+                        connection);
             }
 
             response = new Response<>(false, 200, AppConstantes.EXITO);
@@ -952,6 +1093,12 @@ public class PagoAnticipadoSFPAImpl implements PagoAnticipadoSFPAService {
         preparedStatement.setInt(2, idPagoSFPA);
         preparedStatement.setInt(3, idPlan);
         preparedStatement.executeUpdate();
+        String consultaAnterior = consultaDatos(" SVT_PAGO_SFPA ", "ID_PAGO_SFPA=" + idPagoSFPA,
+                connection);
+        String consultaNueva = consultaDatos(" SVT_PAGO_SFPA ", "ID_PAGO_SFPA=" + idPagoSFPA,
+                connection);
+        insertaBitacora("SVT_PAGO_SFPA ", 2, consultaAnterior, consultaNueva, idUsuario, connection);
+
     }
 
     @Override
@@ -965,9 +1112,9 @@ public class PagoAnticipadoSFPAImpl implements PagoAnticipadoSFPAService {
         Integer idPagoSfpa = datos.get("idPagoSfpa").asInt();
         String parcialidad = datos.get("parcialidad").asText();
         String importeRecibo = datos.get("importeRecibo").asText();
-        Double importe=Double.valueOf(importeRecibo);
-        DecimalFormat df = new DecimalFormat("#.00"); 
-         importeRecibo=df.format(importe);
+        Double importe = Double.valueOf(importeRecibo);
+        DecimalFormat df = new DecimalFormat("#.00");
+        importeRecibo = df.format(importe);
         return providerRestTemplate.consumirServicioReportes(
                 generarDatosReporteReciboPago(idPagoSfpa, parcialidad, importeRecibo,usuarioDto.getNombre()), urlReportes,
                 authentication);
@@ -1010,6 +1157,71 @@ public class PagoAnticipadoSFPAImpl implements PagoAnticipadoSFPAService {
         parametros.put("tipoReporte", tipoReporte);
         return providerRestTemplate.consumirServicioReportes(parametros, urlReportes,
                 authentication);
+
+    }
+
+    private String consultaDatos(String nombreTabla, String restriccion, Connection connection) throws SQLException {
+        List<String> informacion = new ArrayList<>();
+        ResultSet resultSet = null;
+        PreparedStatement statement = null;
+        try {
+            String consulta = "SELECT * FROM " + nombreTabla + " WHERE " + restriccion;
+            log.info("consulta:" + consulta);
+
+            statement = connection.prepareStatement(consulta);
+            resultSet = statement.executeQuery();
+            ResultSetMetaData rsMd = resultSet.getMetaData();
+            int cantidadColumnas = rsMd.getColumnCount();
+            int colum = 1;
+            Map<String, Object> hashMap = new HashMap<>();
+
+            while (resultSet.next()) {
+
+                for (int i = 0; i < cantidadColumnas; i++) {
+                    hashMap.put(rsMd.getColumnLabel(colum), resultSet.getObject(i + 1));
+                    colum++;
+                }
+                informacion.add(hashMap.toString());
+            }
+            statement.close();
+            resultSet.close();
+        } catch (Exception e) {
+            log.info(e.getMessage());
+            return "";
+        } finally {
+            if (statement != null)
+                statement.close();
+            if (resultSet != null)
+                resultSet.close();
+        }
+        return informacion.get(0).toString();
+    }
+
+    private void insertaBitacora(String nombreTabla, Integer tipoTransaccion, String valorAnterior, String valorActual,
+            Integer idUsuario, Connection connection) throws SQLException {
+
+        PreparedStatement statement = null;
+        try {
+            String insert = "INSERT INTO SVH_BITACORA (ID_TIPO_TRANSACCION, "
+                    + "DES_TABLA, DES_DATO_AFECTADO, DES_DATO_ACTUAL, ID_USUARIO) "
+                    + "VALUES(?, ?, ?, ?,?);";
+
+            statement = connection.prepareStatement(insert);
+            statement.setInt(1, tipoTransaccion);
+            statement.setString(2, nombreTabla);
+            statement.setString(3, valorAnterior);
+            statement.setString(4, valorActual);
+            statement.setInt(5, idUsuario);
+            statement.executeUpdate();
+            statement.close();
+        } catch (Exception e) {
+            log.error("fallo la insercion en bitacora", e.getMessage());
+        } finally {
+
+            if (statement != null)
+                statement.close();
+
+        }
 
     }
 
