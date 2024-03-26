@@ -677,6 +677,7 @@ public class PagoAnticipadoSFPAImpl implements PagoAnticipadoSFPAService {
                         connection);
             }
 
+            connection.commit();
             response = new Response<>(false, 200, AppConstantes.EXITO);
 
         } catch (Exception e) {
@@ -1117,7 +1118,7 @@ public class PagoAnticipadoSFPAImpl implements PagoAnticipadoSFPAService {
         DecimalFormat df = new DecimalFormat("#.00");
         importeRecibo = df.format(importe);
         return providerRestTemplate.consumirServicioReportes(
-                generarDatosReporteReciboPago(idPagoSfpa, parcialidad, importeRecibo,usuario), urlReportes,
+                generarDatosReporteReciboPago(idPagoSfpa, parcialidad, importeRecibo, usuario), urlReportes,
                 authentication);
     }
 
@@ -1128,7 +1129,7 @@ public class PagoAnticipadoSFPAImpl implements PagoAnticipadoSFPAService {
         BigDecimal bigDecimal = new BigDecimal(importeRecibo);
         datosPdf.put("rutaNombreReporte", reporteReciboPago);
         datosPdf.put("tipoReporte", "pdf");
-        datosPdf.put("nomUsuario", usuario.equals("")?"":usuario);
+        datosPdf.put("nomUsuario", usuario.equals("") ? "" : usuario);
         datosPdf.put("idPagoSfpa", idPagoSfpa);
         datosPdf.put("numeroParcialidad", parcialidad);
         datosPdf.put("importeTexto", numeroLetras.Convertir(bigDecimal.toString(), true));
