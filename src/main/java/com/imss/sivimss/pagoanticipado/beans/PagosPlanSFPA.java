@@ -139,7 +139,7 @@ public class PagosPlanSFPA {
         public String desactivarPagoBitacora() {
                 final QueryHelper q = new QueryHelper("UPDATE SVC_BITACORA_PAGO_ANTICIPADO");
                 q.agregarParametroValues("IND_ACTIVO", "0");
-                q.addColumn("FEC_BAJA", "CURRENT_DATE()");
+                q.addColumn("FEC_BAJA", "CURRENT_TIMESTAMP()");
                 q.addColumn("ID_USUARIO_BAJA", "?");
                 q.addWhere("ID_BITACORA_PAGO = ?");
                 query = q.obtenerQueryActualizar();
@@ -194,7 +194,7 @@ public class PagosPlanSFPA {
                                 "  FEC_VALE_PARITARIO ,   " +
                                 "  IMP_AUTORIZADO_VALE_PARITARIO ,   " +
                                 "  FEC_ALTA )"
-                                + "VALUES (NULL,?,?,?,?,?,?,?,?,1,?,?,?,?,CURDATE())";
+                                + "VALUES (NULL,?,?,?,?,?,?,?,?,1,?,?,?,?,CURRENT_TIMESTAMP())";
         }
 
         public String validaMontoPagoSFPA() {
@@ -240,7 +240,7 @@ public class PagosPlanSFPA {
                 return " UPDATE SVT_PAGO_SFPA SET ID_ESTATUS_PAGO = ?," +
                                 " IND_TIPO_PAGO = 1 ," +
                                 " ID_USUARIO_MODIFICA = ?," +
-                                " FEC_ACTUALIZACION = CURDATE() " +
+                                " FEC_ACTUALIZACION = CURRENT_TIMESTAMP() " +
                                 " WHERE ID_PAGO_SFPA =?" +
                                 " AND ID_PLAN_SFPA = ?";
         }
@@ -257,7 +257,7 @@ public class PagosPlanSFPA {
         public String actualizaEstatusPlan() {
                 return " UPDATE SVT_PLAN_SFPA SET ID_ESTATUS_PLAN_SFPA=?," +
                                 " ID_USUARIO_MODIFICA= ?," +
-                                " FEC_ACTUALIZACION=  CURDATE()" +
+                                " FEC_ACTUALIZACION=  CURRENT_TIMESTAMP()" +
                                 "  WHERE ID_PLAN_SFPA = ?";
         }
 
@@ -269,7 +269,7 @@ public class PagosPlanSFPA {
                                 " REF_BANCO = ?, " +
                                 " IMP_PAGO = ?, " +
                                 " ID_METODO_PAGO = ?, " +
-                                " FEC_ACTUALIZACION = CURDATE() , " +
+                                " FEC_ACTUALIZACION = CURRENT_TIMESTAMP() , " +
                                 " ID_USUARIO_MODIFICA = ? ," +
                                 " NUM_VALE_PARITARIO = ? ," +
                                 " FEC_VALE_PARITARIO = ? ," +
@@ -292,7 +292,7 @@ public class PagosPlanSFPA {
 
         public String actualizaFolioReciboPagoPlan() {
                 return " UPDATE SVT_PAGO_SFPA SET ID_USUARIO_MODIFICA = ?," +
-                                " FEC_ACTUALIZACION = CURDATE(), " +
+                                " FEC_ACTUALIZACION = CURRENT_TIMESTAMP(), " +
                                 " REF_FOLIO_RECIBO = (" + this.obtenerFolioReciboPagoPlan() + ")" +
                                 " WHERE ID_PAGO_SFPA =?" +
                                 " AND ID_PLAN_SFPA = ?";
