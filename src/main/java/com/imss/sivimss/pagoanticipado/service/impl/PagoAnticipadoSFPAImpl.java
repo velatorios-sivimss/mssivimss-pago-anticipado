@@ -431,7 +431,7 @@ public class PagoAnticipadoSFPAImpl implements PagoAnticipadoSFPAService {
 
             String actualizaEstatusPagoSFPA = pagosPlanSFPA.actualizaEstatusPagoSFPA();
             log.info("actualizar estatus pago  {}", actualizaEstatusPagoSFPA);
-            consultaAnterior = consultaDatos(" SVT_PAGO_SFPA ", "ID_PAGO_SFPA=" + idBitacoraPago,
+            consultaAnterior = consultaDatos(" SVT_PAGO_SFPA ", "ID_PAGO_SFPA=" + idPagoSFPA,
                     connection);
 
             preparedStatement = connection.prepareStatement(actualizaEstatusPagoSFPA);
@@ -440,7 +440,7 @@ public class PagoAnticipadoSFPAImpl implements PagoAnticipadoSFPAService {
             preparedStatement.setInt(3, idPagoSFPA);
             preparedStatement.setInt(4, idPlan);
             Integer actualizaEsatus1 = preparedStatement.executeUpdate();
-            consultaNueva = consultaDatos(" SVT_PAGO_SFPA ", "ID_PAGO_SFPA=" + idBitacoraPago,
+            consultaNueva = consultaDatos(" SVT_PAGO_SFPA ", "ID_PAGO_SFPA=" + idPagoSFPA,
                     connection);
             insertaBitacora("SVT_PAGO_SFPA ", 2, consultaAnterior, consultaNueva, idUsuario, connection);
             if (actualizaEsatus1 < 1) {
